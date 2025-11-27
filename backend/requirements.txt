@@ -26,3 +26,4 @@ factory-boy==3.3.0
 
 # Development utilities
 python-dotenv==1.0.0
+gunicorn==21.2.0
