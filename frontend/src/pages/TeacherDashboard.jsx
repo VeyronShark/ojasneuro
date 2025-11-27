@@ -5,8 +5,13 @@ import { DUMMY_DATA } from '../data/dummyData'
 
 export default function TeacherDashboard({ user }) {
   const navigate = useNavigate()
-  const classes = DUMMY_DATA.classes.filter(c => user.classIds.includes(c.id))
-  const students = DUMMY_DATA.students.filter(s => user.classIds.includes(s.classId))
+  const userClassIds = user.classIds || []
+  const classes = userClassIds.length > 0 
+    ? DUMMY_DATA.classes.filter(c => userClassIds.includes(c.id))
+    : DUMMY_DATA.classes // Show all classes if no classIds (new user)
+  const students = userClassIds.length > 0
+    ? DUMMY_DATA.students.filter(s => userClassIds.includes(s.classId))
+    : DUMMY_DATA.students // Show all students if no classIds (new user)
   
   const activeThisWeek = students.filter(s => {
     const lastActive = new Date(s.lastActive)
