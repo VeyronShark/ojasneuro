@@ -1,25 +1,39 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { authAPI } from '../api/config'
 import { DUMMY_DATA } from '../data/dummyData'
 
 export default function Login({ setUser }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault()
     setError('')
+    setLoading(true)
 
-    const users = Object.values(DUMMY_DATA.users)
-    const user = users.find(u => u.email === email && u.password === password)
+    try {
+      // Try backend API first
+      const response = await authAPI.login(email, password)
+      localStorage.setItem('token', response.token)
+      setUser(response.user)
+      navigate(response.user.role === 'admin' ? '/admin' : '/teacher')
+    } catch (err) {
+      // Fallback to dummy data for demo
+      const users = Object.values(DUMMY_DATA.users)
+      const user = users.find(u => u.email === email && u.password === password)
 
-    if (user) {
-      setUser(user)
-      navigate(user.role === 'admin' ? '/admin' : '/teacher')
-    } else {
-      setError('Invalid credentials')
+      if (user) {
+        setUser(user)
+        navigate(user.role === 'admin' ? '/admin' : '/teacher')
+      } else {
+        setError(err.message || 'Invalid credentials')
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -58,8 +72,8 @@ export default function Login({ setUser }) {
 
           {error && <div style={styles.error}>{error}</div>}
 
-          <button type="submit" style={styles.button}>
-            Login
+          <button type="submit" style={styles.button} disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 
