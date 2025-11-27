@@ -2,8 +2,10 @@
 
 Requirements: 2.1 - GET /schools/{id}/summary returns school details
 Requirements: 2.2 - GET /schools/{id}/classes returns classes belonging to school
+Requirements: 5.1 - GET /schools/{id}/teachers returns teachers belonging to school
+Requirements: 7.1 - GET /schools/{id}/students returns all students in school
 """
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required, get_jwt_identity
 
 from app.services.auth_service import AuthService, AuthenticationError
@@ -77,6 +79,94 @@ def get_school_classes(school_id: int):
         
         return jsonify({
             'classes': [c.to_dict(include_teacher=True) for c in classes]
+        }), 200
+        
+    except AuthenticationError as e:
+        return jsonify({
+            'error': {
+                'code': 'AUTHENTICATION_ERROR',
+                'message': str(e)
+            }
+        }), 401
+    except AccessDeniedError as e:
+        return jsonify({
+            'error': {
+                'code': 'FORBIDDEN',
+                'message': str(e)
+            }
+        }), 403
+    except SchoolNotFoundError as e:
+        return jsonify({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': str(e)
+            }
+        }), 404
+
+
+@schools_bp.route('/<int:school_id>/teachers', methods=['GET'])
+@jwt_required()
+def get_school_teachers(school_id: int):
+    """Get all teachers belonging to a school.
+    
+    Returns:
+        200: List of teachers
+        401: If not authenticated
+        403: If user doesn't have access to the school or is not an admin
+        404: If school not found
+    """
+    user_id = get_jwt_identity()
+    
+    try:
+        user = AuthService.get_current_user(user_id)
+        teachers = SchoolService.get_teachers(school_id, user)
+        
+        return jsonify({
+            'teachers': [t.to_dict() for t in teachers]
+        }), 200
+        
+    except AuthenticationError as e:
+        return jsonify({
+            'error': {
+                'code': 'AUTHENTICATION_ERROR',
+                'message': str(e)
+            }
+        }), 401
+    except AccessDeniedError as e:
+        return jsonify({
+            'error': {
+                'code': 'FORBIDDEN',
+                'message': str(e)
+            }
+        }), 403
+    except SchoolNotFoundError as e:
+        return jsonify({
+            'error': {
+                'code': 'NOT_FOUND',
+                'message': str(e)
+            }
+        }), 404
+
+
+@schools_bp.route('/<int:school_id>/students', methods=['GET'])
+@jwt_required()
+def get_school_students(school_id: int):
+    """Get all students belonging to a school (across all classes).
+    
+    Returns:
+        200: List of students
+        401: If not authenticated
+        403: If user doesn't have access to the school or is not an admin
+        404: If school not found
+    """
+    user_id = get_jwt_identity()
+    
+    try:
+        user = AuthService.get_current_user(user_id)
+        students = SchoolService.get_all_students(school_id, user)
+        
+        return jsonify({
+            'students': [s.to_dict(include_class=True) for s in students]
         }), 200
         
     except AuthenticationError as e:

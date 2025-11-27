@@ -1,11 +1,34 @@
 // API Configuration
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://ojasneuro-backend.onrender.com';
 
-// Helper function for API calls
-export async function apiRequest(endpoint, options = {}) {
+// Custom API Error class for structured error handling
+export class ApiError extends Error {
+  constructor(message, status, details = null) {
+    super(message);
+    this.name = 'ApiError';
+    this.status = status;
+    this.details = details;
+  }
+}
+
+// Event emitter for auth events (401 handling)
+const authEventListeners = new Set();
+
+export const authEvents = {
+  subscribe: (callback) => {
+    authEventListeners.add(callback);
+    return () => authEventListeners.delete(callback);
+  },
+  emit: (event) => {
+    authEventListeners.forEach(callback => callback(event));
+  }
+};
+
+// Request interceptor - adds auth token to requests
+function applyRequestInterceptor(options = {}) {
   const token = localStorage.getItem('token');
   
-  const config = {
+  return {
     headers: {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
@@ -13,15 +36,56 @@ export async function apiRequest(endpoint, options = {}) {
     },
     ...options,
   };
+}
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-  
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Request failed' }));
-    throw new Error(error.error?.message || error.message || 'Request failed');
+// Response interceptor - handles errors including 401
+async function handleResponse(response) {
+  if (response.ok) {
+    // Handle empty responses (204 No Content)
+    if (response.status === 204) {
+      return null;
+    }
+    return response.json();
   }
+
+  // Parse error response
+  let errorData;
+  try {
+    errorData = await response.json();
+  } catch {
+    errorData = { message: 'Request failed' };
+  }
+
+  const errorMessage = errorData.error?.message || errorData.message || 'Request failed';
+  const errorDetails = errorData.error?.details || errorData.details || null;
+
+  // Handle 401 Unauthorized - emit event for auth context to handle
+  if (response.status === 401) {
+    authEvents.emit({ type: 'unauthorized', message: errorMessage });
+  }
+
+  throw new ApiError(errorMessage, response.status, errorDetails);
+}
+
+// Helper function for API calls with centralized error handling
+export async function apiRequest(endpoint, options = {}) {
+  const config = applyRequestInterceptor(options);
   
-  return response.json();
+  try {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+    return await handleResponse(response);
+  } catch (error) {
+    // Re-throw ApiError as-is
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    // Wrap network errors
+    throw new ApiError(
+      error.message || 'Network error. Please check your connection.',
+      0,
+      null
+    );
+  }
 }
 
 // Auth API
@@ -53,12 +117,54 @@ export const schoolsAPI = {
   getAll: () => apiRequest('/schools'),
   getById: (id) => apiRequest(`/schools/${id}`),
   getClasses: (schoolId) => apiRequest(`/schools/${schoolId}/classes`),
+  getTeachers: (schoolId) => apiRequest(`/schools/${schoolId}/teachers`),
+  getAllStudents: (schoolId) => apiRequest(`/schools/${schoolId}/students`),
+  getSummary: (schoolId) => apiRequest(`/schools/${schoolId}/summary`),
+  getMetrics: (schoolId) => apiRequest(`/schools/${schoolId}/metrics`),
 };
 
 // Classes API
 export const classesAPI = {
   getById: (id) => apiRequest(`/classes/${id}`),
   getStudents: (classId) => apiRequest(`/classes/${classId}/children`),
+  getMetrics: (classId) => apiRequest(`/analytics/class/${classId}`),
+  create: (data) => apiRequest('/classes', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  update: (id, data) => apiRequest(`/classes/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  delete: (id) => apiRequest(`/classes/${id}`, {
+    method: 'DELETE',
+  }),
+};
+
+// Students/Children API
+export const studentsAPI = {
+  getById: (id) => apiRequest(`/children/${id}`),
+  getMetrics: (childId) => apiRequest(`/analytics/child/${childId}`),
+  getSkillProfile: (childId) => apiRequest(`/children/${childId}/skill-profile`),
+  getInsights: (childId) => apiRequest(`/insights/child/${childId}`),
+  create: (data) => apiRequest('/children', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  update: (id, data) => apiRequest(`/children/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  delete: (id) => apiRequest(`/children/${id}`, {
+    method: 'DELETE',
+  }),
+};
+
+// Teachers API (Admin only)
+export const teachersAPI = {
+  getAll: (schoolId) => apiRequest(`/schools/${schoolId}/teachers`),
+  getById: (id) => apiRequest(`/teachers/${id}`),
+  getClasses: (teacherId) => apiRequest(`/teachers/${teacherId}/classes`),
 };
 
 // Analytics API

@@ -8,6 +8,7 @@ from app import db
 from app.models.school import School
 from app.models.class_ import Class
 from app.models.teacher import Teacher
+from app.models.child import Child
 
 
 class SchoolNotFoundError(Exception):
@@ -114,3 +115,72 @@ class SchoolService:
             raise SchoolNotFoundError(f"School with id {school_id} not found")
         
         return school
+    
+    @staticmethod
+    def get_teachers(school_id: int, user: Teacher) -> list[Teacher]:
+        """Get all teachers belonging to a school.
+        
+        Args:
+            school_id: ID of the school
+            user: The authenticated user making the request
+            
+        Returns:
+            List of Teacher instances belonging to the school
+            
+        Raises:
+            SchoolNotFoundError: If school doesn't exist
+            AccessDeniedError: If user doesn't belong to the school or is not an admin
+        """
+        # Multi-tenancy check: user must belong to the requested school
+        if user.school_id != school_id:
+            raise AccessDeniedError("Access denied to this school")
+        
+        # Only admins can view all teachers
+        if not user.is_admin():
+            raise AccessDeniedError("Only administrators can view all teachers")
+        
+        school = db.session.get(School, school_id)
+        
+        if school is None:
+            raise SchoolNotFoundError(f"School with id {school_id} not found")
+        
+        # Return only teachers belonging to this school (multi-tenancy filter)
+        return Teacher.query.filter_by(school_id=school_id).all()
+    
+    @staticmethod
+    def get_all_students(school_id: int, user: Teacher) -> list[Child]:
+        """Get all students/children belonging to a school (across all classes).
+        
+        Args:
+            school_id: ID of the school
+            user: The authenticated user making the request
+            
+        Returns:
+            List of Child instances belonging to the school
+            
+        Raises:
+            SchoolNotFoundError: If school doesn't exist
+            AccessDeniedError: If user doesn't belong to the school or is not an admin
+        """
+        # Multi-tenancy check: user must belong to the requested school
+        if user.school_id != school_id:
+            raise AccessDeniedError("Access denied to this school")
+        
+        # Only admins can view all students across all classes
+        if not user.is_admin():
+            raise AccessDeniedError("Only administrators can view all students")
+        
+        school = db.session.get(School, school_id)
+        
+        if school is None:
+            raise SchoolNotFoundError(f"School with id {school_id} not found")
+        
+        # Get all classes in the school, then get all children in those classes
+        school_classes = Class.query.filter_by(school_id=school_id).all()
+        class_ids = [c.id for c in school_classes]
+        
+        if not class_ids:
+            return []
+        
+        # Return all children in the school's classes
+        return Child.query.filter(Child.class_id.in_(class_ids)).all()

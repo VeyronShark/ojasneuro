@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import { authAPI } from '../api/config'
-import { DUMMY_DATA } from '../data/dummyData'
 
-export default function Login({ setUser }) {
+export default function Login() {
+  const { login, isAuthenticated, user } = useAuth()
   const [isSignup, setIsSignup] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -16,6 +17,13 @@ export default function Login({ setUser }) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      navigate(user.role === 'admin' ? '/admin' : '/teacher', { replace: true })
+    }
+  }, [isAuthenticated, user, navigate])
 
   useEffect(() => {
     if (isSignup) {
@@ -47,20 +55,10 @@ export default function Login({ setUser }) {
     setLoading(true)
 
     try {
-      const response = await authAPI.login(email, password)
-      localStorage.setItem('token', response.token)
-      setUser(response.user)
-      navigate(response.user.role === 'admin' ? '/admin' : '/teacher')
+      const userData = await login(email, password)
+      navigate(userData.role === 'admin' ? '/admin' : '/teacher')
     } catch (err) {
-      // Fallback to dummy data for demo
-      const users = Object.values(DUMMY_DATA.users)
-      const user = users.find(u => u.email === email && u.password === password)
-      if (user) {
-        setUser(user)
-        navigate(user.role === 'admin' ? '/admin' : '/teacher')
-      } else {
-        setError(err.message || 'Invalid credentials')
-      }
+      setError(err.message || 'Invalid credentials. Please check your email and password.')
     } finally {
       setLoading(false)
     }
@@ -98,8 +96,8 @@ export default function Login({ setUser }) {
         school_name: role === 'admin' ? schoolName : null
       })
       localStorage.setItem('token', response.token)
-      setUser(response.user)
-      navigate(response.user.role === 'admin' ? '/admin' : '/teacher')
+      // After signup, trigger a session restore to update auth context
+      window.location.href = response.user.role === 'admin' ? '/admin' : '/teacher'
     } catch (err) {
       setError(err.message || 'Signup failed')
     } finally {

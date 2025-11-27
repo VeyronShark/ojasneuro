@@ -65,6 +65,7 @@ def create_app(config_name=None):
     from app.routes.auth import auth_bp
     from app.routes.schools import schools_bp
     from app.routes.classes import classes_bp
+    from app.routes.children import children_bp
     from app.routes.events import events_bp
     from app.routes.analytics import analytics_bp
     from app.routes.insights import insights_bp
@@ -74,6 +75,7 @@ def create_app(config_name=None):
     app.register_blueprint(auth_bp)
     app.register_blueprint(schools_bp)
     app.register_blueprint(classes_bp)
+    app.register_blueprint(children_bp)
     app.register_blueprint(events_bp)
     app.register_blueprint(analytics_bp)
     app.register_blueprint(insights_bp)

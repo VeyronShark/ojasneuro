@@ -1,11 +1,17 @@
 import { useState } from 'react'
 import Layout from '../components/Layout'
 import Card from '../components/Card'
-import { DUMMY_DATA } from '../data/dummyData'
 
-export default function ParentCommunication({ user }) {
+// Static communication templates - could be fetched from API in future
+const COMMUNICATION_TEMPLATES = {
+  whatsappTemplate: "Hello! 👋 We're excited to share our new learning app that helps reinforce mindfulness and Montessori principles at home. It's safe, ad-free, and takes just a few minutes a day. Download link: [APP_LINK]",
+  emailTemplate: "Dear Parents,\n\nWe're introducing a new educational tool to support your child's development at home. The app provides short, engaging activities that reinforce the Montessori and mindfulness practices we use in class.\n\nKey benefits:\n- Safe and ad-free environment\n- Just 2-3 minutes per day\n- Builds attention, patience, and emotional awareness\n\nPlease install the app and let us know if you have any questions.\n\nBest regards,\n[Teacher Name]",
+  handout: "How to Install & Use the Lockscreen App\n\n1. Download from [link]\n2. Enable lockscreen permissions\n3. Your child will see fun, educational puzzles\n4. No ads, completely safe\n5. Progress shared with teacher (with your consent)"
+}
+
+export default function ParentCommunication() {
   const [copied, setCopied] = useState('')
-  const templates = DUMMY_DATA.parentCommunication
+  const templates = COMMUNICATION_TEMPLATES
 
   const copyToClipboard = (text, type) => {
     navigator.clipboard.writeText(text)
@@ -14,7 +20,7 @@ export default function ParentCommunication({ user }) {
   }
 
   return (
-    <Layout user={user} title="Parent Communication Tools">
+    <Layout title="Parent Communication Tools">
       <Card title="WhatsApp Message Template">
         <div style={styles.template}>
           <pre style={styles.templateText}>{templates.whatsappTemplate}</pre>

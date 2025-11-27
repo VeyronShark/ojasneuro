@@ -1,16 +1,44 @@
 import { useState } from 'react'
 import Layout from '../components/Layout'
 import Card from '../components/Card'
-import { DUMMY_DATA } from '../data/dummyData'
 
-export default function SkillSuggestions({ user }) {
+// Static skill suggestions data - could be fetched from API in future
+const SKILL_SUGGESTIONS = {
+  patience: [
+    "Transferring beans with a spoon",
+    "Watching a sand timer before the next turn",
+    "Slow pouring activities with water"
+  ],
+  attention: [
+    "Sound matching games",
+    "Following multi-step instructions",
+    "Sorting activities by color or size"
+  ],
+  sensory: [
+    "Texture exploration with natural materials",
+    "Smelling jars activity",
+    "Temperature comparison exercises"
+  ],
+  emotionAwareness: [
+    "Emotion cards matching",
+    "Mirror activities for facial expressions",
+    "Story time with emotion discussions"
+  ],
+  bodyAwareness: [
+    "Yoga poses for children",
+    "Walking on a line exercise",
+    "Body part identification games"
+  ]
+}
+
+export default function SkillSuggestions() {
   const [selectedSkill, setSelectedSkill] = useState('patience')
-  const suggestions = DUMMY_DATA.skillSuggestions
+  const suggestions = SKILL_SUGGESTIONS
 
   const topSkills = ['patience', 'attention', 'sensory']
 
   return (
-    <Layout user={user} title="Skill Themes & Classroom Suggestions">
+    <Layout title="Skill Themes & Classroom Suggestions">
       <Card title="This Week's Top 3 Skills Reinforced at Home">
         <div style={styles.topSkills}>
           {topSkills.map(skill => (
