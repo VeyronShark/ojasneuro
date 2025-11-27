@@ -1,4 +1,4 @@
-"""Authentication routes for login, logout, and user profile.
+"""Authentication routes for login, logout, signup, and user profile.
 
 Requirements: 1.1 - POST /auth/login returns token and profile for valid credentials
 Requirements: 1.2 - POST /auth/login returns 401 for invalid credentials
@@ -14,7 +14,7 @@ from flask_jwt_extended import (
     get_jwt,
 )
 
-from app.services.auth_service import AuthService, AuthenticationError
+from app.services.auth_service import AuthService, AuthenticationError, ValidationError
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
@@ -135,3 +135,75 @@ def get_current_user():
                 'message': str(e)
             }
         }), 401
+
+
+@auth_bp.route('/signup', methods=['POST'])
+def signup():
+    """Register a new user account.
+    
+    Request Body:
+        {
+            "email": "user@example.com",
+            "password": "password123",
+            "name": "John Doe",
+            "role": "teacher" or "admin",
+            "school_id": 1,  // Required for teachers
+            "school_name": "My School"  // Required for admins
+        }
+        
+    Returns:
+        201: {"token": "...", "user": {...}}
+        400: {"error": {"code": "VALIDATION_ERROR", "message": "..."}}
+    """
+    data = request.get_json()
+    
+    if not data:
+        return jsonify({
+            'error': {
+                'code': 'VALIDATION_ERROR',
+                'message': 'Request body is required'
+            }
+        }), 400
+    
+    try:
+        teacher, token = AuthService.signup(
+            email=data.get('email'),
+            password=data.get('password'),
+            name=data.get('name'),
+            role=data.get('role', 'teacher'),
+            school_id=data.get('school_id'),
+            school_name=data.get('school_name')
+        )
+        
+        return jsonify({
+            'token': token,
+            'user': teacher.to_dict(include_school=True)
+        }), 201
+        
+    except ValidationError as e:
+        return jsonify({
+            'error': {
+                'code': 'VALIDATION_ERROR',
+                'message': str(e)
+            }
+        }), 400
+    except AuthenticationError as e:
+        return jsonify({
+            'error': {
+                'code': 'AUTHENTICATION_ERROR',
+                'message': str(e)
+            }
+        }), 401
+
+
+@auth_bp.route('/schools', methods=['GET'])
+def get_schools():
+    """Get list of schools for signup dropdown.
+    
+    Returns:
+        200: {"schools": [...]}
+    """
+    schools = AuthService.get_schools()
+    return jsonify({
+        'schools': [school.to_dict() for school in schools]
+    }), 200

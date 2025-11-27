@@ -32,11 +32,20 @@ export const authAPI = {
       body: JSON.stringify({ email, password }),
     }),
   
+  signup: (data) =>
+    apiRequest('/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  
   logout: () => 
     apiRequest('/auth/logout', { method: 'POST' }),
   
   getProfile: () => 
     apiRequest('/auth/me'),
+  
+  getSchools: () =>
+    apiRequest('/auth/schools'),
 };
 
 // Schools API
