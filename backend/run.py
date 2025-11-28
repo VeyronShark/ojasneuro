@@ -9,8 +9,17 @@ Usage:
 Environment Variables:
     FLASK_ENV: Configuration environment ('development', 'production', 'testing')
     PORT: Port to run the server on (default: 5000)
+    SECRET_KEY: Flask secret key
+    JWT_SECRET_KEY: JWT signing key
+    DATABASE_URL: Database connection string
+    CORS_ORIGINS: Comma-separated list of allowed CORS origins
 """
 import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
 from app import create_app
 
 # Create the Flask application

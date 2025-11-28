@@ -41,19 +41,15 @@ def create_app(config_name=None):
     jwt.init_app(app)
     
     # Configure CORS for frontend integration
+    # CORS_ORIGINS env var should contain comma-separated list of allowed origins
     cors_origins_env = os.environ.get('CORS_ORIGINS', '')
-    default_origins = ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173', 'http://127.0.0.1:3000']
     
     if cors_origins_env:
         # Parse and clean origins from environment
         cors_origins = [origin.strip() for origin in cors_origins_env.split(',') if origin.strip()]
-        cors_origins.extend(default_origins)
     else:
-        cors_origins = default_origins
-    
-    # Always include the production frontend
-    if 'https://ojasneuro.onrender.com' not in cors_origins:
-        cors_origins.append('https://ojasneuro.onrender.com')
+        # Default to localhost origins for development
+        cors_origins = ['http://localhost:5173', 'http://localhost:3000', 'http://127.0.0.1:5173', 'http://127.0.0.1:3000']
     
     CORS(app, 
          origins=cors_origins,

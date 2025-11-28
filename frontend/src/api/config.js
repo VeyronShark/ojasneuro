@@ -1,5 +1,10 @@
 // API Configuration
-export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://ojasneuro-backend.onrender.com';
+// VITE_API_URL must be set in .env file - no hardcoded fallback
+export const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+if (!API_BASE_URL) {
+  console.error('VITE_API_URL environment variable is not set. Please configure your .env file.');
+}
 
 // Custom API Error class for structured error handling
 export class ApiError extends Error {
