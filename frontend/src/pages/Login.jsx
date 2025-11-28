@@ -258,8 +258,8 @@ export default function Login() {
         {!isSignup && (
           <div style={styles.demo}>
             <p style={styles.demoTitle}>Demo Credentials:</p>
-            <p style={styles.demoText}>Admin: admin@school.com / admin123</p>
-            <p style={styles.demoText}>Teacher: teacher@school.com / teacher123</p>
+            <p style={styles.demoText}>Admin: admin@sunshine.edu / admin123</p>
+            <p style={styles.demoText}>Teacher: maria@sunshine.edu / teacher123</p>
           </div>
         )}
       </div>
