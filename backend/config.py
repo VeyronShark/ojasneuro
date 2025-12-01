@@ -1,6 +1,10 @@
 """Configuration settings for the Flask application."""
 import os
 from datetime import timedelta
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 class Config:
@@ -27,12 +31,9 @@ class DevelopmentConfig(Config):
     )
 
 
-class ProductionConfig(Config):
-    """Production configuration."""
-    DEBUG = False
-    
-    # Handle Render's postgres:// vs postgresql:// URL format
-    # Get raw URL from environment
+def _process_database_url():
+    """Process DATABASE_URL for pg8000 compatibility."""
+    import re
     database_url = os.getenv('DATABASE_URL', '')
     # Convert legacy postgres:// to postgresql:// for SQLAlchemy compatibility
     if database_url.startswith('postgres://'):
@@ -40,12 +41,20 @@ class ProductionConfig(Config):
     # Force use of pg8000 driver
     if database_url.startswith('postgresql://'):
         database_url = database_url.replace('postgresql://', 'postgresql+pg8000://', 1)
-    # Translate sslmode parameter (pg8000 expects 'ssl')
+    # Remove sslmode and channel_binding parameters (pg8000 handles SSL automatically)
     if 'sslmode=' in database_url:
-        # Simple replacement: drop sslmode and enable ssl
-        database_url = database_url.replace('sslmode=require', 'ssl=true')
-        database_url = database_url.replace('sslmode=disable', 'ssl=false')
-    SQLALCHEMY_DATABASE_URI = database_url
+        database_url = re.sub(r'[&?]sslmode=[^&]*', '', database_url)
+    if 'channel_binding=' in database_url:
+        database_url = re.sub(r'[&?]channel_binding=[^&]*', '', database_url)
+    # Clean up any trailing ? or & from removed parameters
+    database_url = re.sub(r'[?&]$', '', database_url)
+    return database_url
+
+
+class ProductionConfig(Config):
+    """Production configuration."""
+    DEBUG = False
+    SQLALCHEMY_DATABASE_URI = _process_database_url()
     
     # Override with stronger settings in production
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(minutes=30)

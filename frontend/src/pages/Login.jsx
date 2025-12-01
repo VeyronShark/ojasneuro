@@ -3,6 +3,231 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { authAPI } from '../api/config'
 
+const DUMMY_ACCOUNTS = [
+  { email: "sarah.johnson@sunshine.edu", password: "password123", name: "Sarah Johnson", role: "Admin", school: "Sunshine Montessori" },
+  { email: "maria.garcia@sunshine.edu", password: "password123", name: "Maria Garcia", role: "Teacher", school: "Sunshine Montessori" },
+  { email: "emily.chen@greenvalley.edu", password: "password123", name: "Emily Chen", role: "Admin", school: "Green Valley Montessori" },
+  { email: "david.wilson@littlestars.edu", password: "password123", name: "David Wilson", role: "Teacher", school: "Little Stars Learning" },
+  { email: "lisa.anderson@rainbow.edu", password: "password123", name: "Lisa Anderson", role: "Teacher", school: "Rainbow Bridge Academy" },
+  { email: "michael.brown@brightminds.edu", password: "password123", name: "Michael Brown", role: "Admin", school: "Bright Minds Montessori" },
+  { email: "jennifer.lee@peaceful.edu", password: "password123", name: "Jennifer Lee", role: "Teacher", school: "Peaceful Pathways" },
+  { email: "robert.taylor@discovery.edu", password: "password123", name: "Robert Taylor", role: "Teacher", school: "Discovery Kids Academy" },
+  { email: "amanda.white@harmony.edu", password: "password123", name: "Amanda White", role: "Admin", school: "Harmony House Learning" },
+  { email: "james.martin@wisdom.edu", password: "password123", name: "James Martin", role: "Teacher", school: "Wisdom Tree Montessori" },
+]
+
+function DummyAccounts({ onSelectAccount }) {
+  const [copiedIndex, setCopiedIndex] = useState(null)
+  const [expanded, setExpanded] = useState(false)
+
+  const copyToClipboard = async (text, index) => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopiedIndex(index)
+      setTimeout(() => setCopiedIndex(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
+  }
+
+  const displayedAccounts = expanded ? DUMMY_ACCOUNTS : DUMMY_ACCOUNTS.slice(0, 3)
+
+  return (
+    <div style={demoStyles.container}>
+      <div style={demoStyles.header}>
+        <p style={demoStyles.title}>🎭 Demo Accounts</p>
+        <p style={demoStyles.subtitle}>Click any account to auto-fill the login form</p>
+      </div>
+      
+      <div style={demoStyles.accountsList}>
+        {displayedAccounts.map((account, index) => (
+          <div key={index} style={demoStyles.accountCard}>
+            <div style={demoStyles.accountInfo}>
+              <div style={demoStyles.accountHeader}>
+                <span style={demoStyles.accountName}>{account.name}</span>
+                <span style={{
+                  ...demoStyles.roleBadge,
+                  ...(account.role === 'Admin' ? demoStyles.adminBadge : demoStyles.teacherBadge)
+                }}>
+                  {account.role === 'Admin' ? '👔' : '👩‍🏫'} {account.role}
+                </span>
+              </div>
+              <div style={demoStyles.accountSchool}>{account.school}</div>
+              <div style={demoStyles.credentials}>
+                <div style={demoStyles.credentialRow}>
+                  <span style={demoStyles.credentialLabel}>Email:</span>
+                  <code style={demoStyles.credentialValue}>{account.email}</code>
+                  <button
+                    onClick={() => copyToClipboard(account.email, `email-${index}`)}
+                    style={demoStyles.copyButton}
+                    title="Copy email"
+                  >
+                    {copiedIndex === `email-${index}` ? '✓' : '📋'}
+                  </button>
+                </div>
+                <div style={demoStyles.credentialRow}>
+                  <span style={demoStyles.credentialLabel}>Pass:</span>
+                  <code style={demoStyles.credentialValue}>{account.password}</code>
+                  <button
+                    onClick={() => copyToClipboard(account.password, `pass-${index}`)}
+                    style={demoStyles.copyButton}
+                    title="Copy password"
+                  >
+                    {copiedIndex === `pass-${index}` ? '✓' : '📋'}
+                  </button>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={() => onSelectAccount(account.email, account.password)}
+              style={demoStyles.useButton}
+            >
+              Use Account
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {DUMMY_ACCOUNTS.length > 3 && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          style={demoStyles.expandButton}
+        >
+          {expanded ? '▲ Show Less' : `▼ Show All ${DUMMY_ACCOUNTS.length} Accounts`}
+        </button>
+      )}
+    </div>
+  )
+}
+
+const demoStyles = {
+  container: {
+    marginTop: '1.5rem',
+    padding: '1rem',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    borderRadius: '8px',
+    color: 'white'
+  },
+  header: {
+    marginBottom: '1rem',
+    textAlign: 'center'
+  },
+  title: {
+    fontSize: '1rem',
+    fontWeight: '600',
+    margin: '0 0 0.25rem 0'
+  },
+  subtitle: {
+    fontSize: '0.75rem',
+    margin: 0,
+    opacity: 0.9
+  },
+  accountsList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.75rem'
+  },
+  accountCard: {
+    background: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: '6px',
+    padding: '0.75rem',
+    color: '#2c3e50'
+  },
+  accountInfo: {
+    marginBottom: '0.5rem'
+  },
+  accountHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '0.25rem'
+  },
+  accountName: {
+    fontSize: '0.875rem',
+    fontWeight: '600',
+    color: '#2c3e50'
+  },
+  roleBadge: {
+    fontSize: '0.7rem',
+    padding: '0.15rem 0.5rem',
+    borderRadius: '12px',
+    fontWeight: '500'
+  },
+  adminBadge: {
+    background: '#e3f2fd',
+    color: '#1976d2'
+  },
+  teacherBadge: {
+    background: '#f3e5f5',
+    color: '#7b1fa2'
+  },
+  accountSchool: {
+    fontSize: '0.7rem',
+    color: '#6c757d',
+    marginBottom: '0.5rem'
+  },
+  credentials: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.25rem'
+  },
+  credentialRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    fontSize: '0.75rem'
+  },
+  credentialLabel: {
+    fontWeight: '500',
+    color: '#6c757d',
+    minWidth: '35px'
+  },
+  credentialValue: {
+    flex: 1,
+    background: '#f8f9fa',
+    padding: '0.25rem 0.5rem',
+    borderRadius: '3px',
+    fontSize: '0.7rem',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap'
+  },
+  copyButton: {
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    fontSize: '0.875rem',
+    padding: '0.25rem',
+    opacity: 0.7,
+    transition: 'opacity 0.2s'
+  },
+  useButton: {
+    width: '100%',
+    padding: '0.5rem',
+    background: '#4a90e2',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '0.8rem',
+    fontWeight: '500',
+    cursor: 'pointer',
+    transition: 'background 0.2s'
+  },
+  expandButton: {
+    width: '100%',
+    marginTop: '0.75rem',
+    padding: '0.5rem',
+    background: 'rgba(255, 255, 255, 0.2)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '4px',
+    fontSize: '0.8rem',
+    fontWeight: '500',
+    cursor: 'pointer',
+    transition: 'background 0.2s'
+  }
+}
+
 export default function Login() {
   const { login, isAuthenticated, user } = useAuth()
   const [isSignup, setIsSignup] = useState(false)
@@ -255,13 +480,10 @@ export default function Login() {
           </button>
         </div>
 
-        {!isSignup && (
-          <div style={styles.demo}>
-            <p style={styles.demoTitle}>Demo Credentials:</p>
-            <p style={styles.demoText}>Admin: admin@sunshine.edu / admin123</p>
-            <p style={styles.demoText}>Teacher: maria@sunshine.edu / teacher123</p>
-          </div>
-        )}
+        {!isSignup && <DummyAccounts onSelectAccount={(email, password) => {
+          setEmail(email)
+          setPassword(password)
+        }} />}
       </div>
     </div>
   )
