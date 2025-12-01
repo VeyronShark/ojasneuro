@@ -40,6 +40,11 @@ class ProductionConfig(Config):
     # Force use of pg8000 driver
     if database_url.startswith('postgresql://'):
         database_url = database_url.replace('postgresql://', 'postgresql+pg8000://', 1)
+    # Translate sslmode parameter (pg8000 expects 'ssl')
+    if 'sslmode=' in database_url:
+        # Simple replacement: drop sslmode and enable ssl
+        database_url = database_url.replace('sslmode=require', 'ssl=true')
+        database_url = database_url.replace('sslmode=disable', 'ssl=false')
     SQLALCHEMY_DATABASE_URI = database_url
     
     # Override with stronger settings in production
