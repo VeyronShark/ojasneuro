@@ -42,7 +42,7 @@ def create_app(config_name=None):
     
     # Configure CORS for frontend integration
     # CORS_ORIGINS env var should contain comma-separated list of allowed origins
-    cors_origins_env = os.environ.get('CORS_ORIGINS', '')
+    cors_origins_env = os.environ.get('CORS_ORIGIN', '')
     
     if cors_origins_env:
         # Parse and clean origins from environment
