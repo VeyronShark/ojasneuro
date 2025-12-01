@@ -20,7 +20,67 @@ from app.services.analytics_service import (
 from app.models.child import Child
 from app import db
 
-analytics_bp = Blueprint('analytics', __name__)
+analytics_bp = Blueprint('analytics', __name__, url_prefix='/analytics')
+
+
+@analytics_bp.route('/school/<int:school_id>', methods=['GET'])
+@jwt_required()
+def get_school_metrics(school_id: int):
+    """Get aggregated metrics for a school.
+    
+    Returns:
+        200: School metrics data
+        401: If not authenticated
+        403: If user doesn't have access to the school
+    """
+    user_id = get_jwt_identity()
+    
+    try:
+        user = AuthService.get_current_user(user_id)
+        
+        # Verify user belongs to this school
+        if user.school_id != school_id:
+            return jsonify({
+                'error': {
+                    'code': 'FORBIDDEN',
+                    'message': 'You do not have access to this school'
+                }
+            }), 403
+        
+        # Get school metrics from the database
+        from app.models import School, SchoolWeeklyMetrics
+        school = db.session.get(School, school_id)
+        if not school:
+            return jsonify({
+                'error': {
+                    'code': 'NOT_FOUND',
+                    'message': f'School with id {school_id} not found'
+                }
+            }), 404
+        
+        # Get latest weekly metrics
+        latest_metrics = SchoolWeeklyMetrics.query.filter_by(
+            school_id=school_id
+        ).order_by(SchoolWeeklyMetrics.week_start_date.desc()).first()
+        
+        metrics_data = latest_metrics.metrics if latest_metrics else {}
+        
+        return jsonify({
+            'school_id': school_id,
+            'school_name': school.name,
+            'enrolled_families': school.enrolled_families,
+            'app_installs': school.app_installs,
+            'metrics': metrics_data,
+            'week_start_date': latest_metrics.week_start_date.isoformat() if latest_metrics else None
+        }), 200
+        
+    except AuthenticationError as e:
+        return jsonify({
+            'error': {
+                'code': 'AUTHENTICATION_ERROR',
+                'message': str(e)
+            }
+        }), 401
 
 
 def _parse_date_range(request) -> DateRange:

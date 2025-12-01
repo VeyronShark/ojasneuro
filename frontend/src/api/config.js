@@ -175,8 +175,10 @@ export const teachersAPI = {
 // Analytics API
 export const analyticsAPI = {
   getSchoolMetrics: (schoolId) => apiRequest(`/analytics/school/${schoolId}`),
-  getClassMetrics: (classId) => apiRequest(`/analytics/class/${classId}`),
-  getChildMetrics: (childId) => apiRequest(`/analytics/child/${childId}`),
+  getClassMetrics: (classId) => apiRequest(`/analytics/classes/${classId}/metrics`),
+  getChildMetrics: (childId) => apiRequest(`/analytics/children/${childId}/metrics`),
+  getClassSkillOverview: (classId) => apiRequest(`/analytics/classes/${classId}/skill-overview`),
+  getChildSkillProfile: (childId) => apiRequest(`/analytics/children/${childId}/skill-profile`),
 };
 
 // Events API
