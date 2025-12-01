@@ -77,7 +77,29 @@ export default function AdminDashboard() {
       setMetricsError(null)
       try {
         const data = await analyticsAPI.getSchoolMetrics(schoolId)
-        setMetrics(data)
+        
+        // Extract metrics from the response structure
+        const metricsData = data.metrics || {}
+        
+        // App install rate - check if it's already a percentage or needs calculation
+        let appInstallRate = metricsData.app_install_rate || 0
+        if (appInstallRate < 1 && appInstallRate > 0) {
+          // If it's a decimal (0-1), convert to percentage
+          appInstallRate = appInstallRate * 100
+        } else if (data.app_installs && data.enrolled_families) {
+          // Calculate from raw data if available
+          appInstallRate = (data.app_installs / data.enrolled_families) * 100
+        }
+        
+        setMetrics({
+          app_install_rate: appInstallRate,
+          avg_daily_sessions: metricsData.avg_daily_sessions || 0,
+          top_skills: metricsData.top_skills || [],
+          weekly_engagement: metricsData.weekly_engagement || [0, 0, 0, 0],
+          total_teachers: metricsData.total_teachers || 0,
+          total_classes: metricsData.total_classes || 0,
+          total_students: metricsData.total_students || 0
+        })
       } catch (err) {
         setMetricsError(err.message || 'Failed to load school metrics')
         // Set default metrics on error
@@ -242,6 +264,18 @@ export default function AdminDashboard() {
     const topSkills = stats.top_skills || []
     const weeklyEngagement = stats.weekly_engagement || [0, 0, 0, 0]
     
+    // Format skill names for display
+    const formatSkillName = (skill) => {
+      const skillMap = {
+        'attention': 'Attention',
+        'patience': 'Patience',
+        'sensory': 'Sensory Awareness',
+        'emotionAwareness': 'Emotion Awareness',
+        'bodyAwareness': 'Body Awareness'
+      }
+      return skillMap[skill] || skill
+    }
+    
     return (
       <>
         <div style={styles.grid}>
@@ -262,7 +296,7 @@ export default function AdminDashboard() {
               {topSkills.length > 0 ? topSkills.slice(0, 5).map((skill, i) => (
                 <div key={i} style={styles.skillItem}>
                   <span style={styles.skillRank}>{i + 1}</span>
-                  <span>{skill}</span>
+                  <span>{formatSkillName(skill)}</span>
                 </div>
               )) : (
                 <div style={styles.emptyText}>No skill data available</div>
@@ -272,12 +306,16 @@ export default function AdminDashboard() {
 
           <Card title="Engagement Trend" style={{ gridColumn: 'span 2' }}>
             <div style={styles.chart}>
-              {weeklyEngagement.map((value, i) => (
-                <div key={i} style={styles.chartBar}>
-                  <div style={{ ...styles.bar, height: `${Math.max(value * 50, 5)}px` }}></div>
-                  <div style={styles.chartLabel}>Week {i + 1}</div>
-                </div>
-              ))}
+              {weeklyEngagement.map((value, i) => {
+                // Calculate height: scale 0-1 to 20-120px
+                const height = Math.max(value * 120, 20)
+                return (
+                  <div key={i} style={styles.chartBar}>
+                    <div style={{ ...styles.bar, height: `${height}px` }}></div>
+                    <div style={styles.chartLabel}>Week {i + 1}</div>
+                  </div>
+                )
+              })}
             </div>
             <div style={styles.chartNote}>Last 4 weeks engagement trend</div>
           </Card>
@@ -287,13 +325,13 @@ export default function AdminDashboard() {
         <div style={styles.summaryGrid}>
           <Card>
             <div style={styles.summaryItem}>
-              <div style={styles.summaryValue}>{stats.total_teachers || teachers.length || 0}</div>
+              <div style={styles.summaryValue}>{stats.total_teachers || 0}</div>
               <div style={styles.summaryLabel}>Teachers</div>
             </div>
           </Card>
           <Card>
             <div style={styles.summaryItem}>
-              <div style={styles.summaryValue}>{stats.total_classes || classes.length || 0}</div>
+              <div style={styles.summaryValue}>{stats.total_classes || 0}</div>
               <div style={styles.summaryLabel}>Classes</div>
             </div>
           </Card>
@@ -766,32 +804,38 @@ const styles = {
   skillList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.75rem'
+    gap: '0.75rem',
+    minHeight: '120px'
   },
   skillItem: {
     display: 'flex',
     alignItems: 'center',
     gap: '0.75rem',
-    fontSize: '0.9375rem'
+    fontSize: '0.9375rem',
+    padding: '0.5rem',
+    borderRadius: 'var(--radius-sm)',
+    transition: 'background 0.2s ease'
   },
   skillRank: {
-    width: '24px',
-    height: '24px',
+    width: '28px',
+    height: '28px',
     borderRadius: '50%',
-    background: '#e9ecef',
+    background: 'linear-gradient(135deg, var(--primary-light), var(--primary))',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: '0.75rem',
-    fontWeight: '600',
-    color: '#495057'
+    fontWeight: '700',
+    color: 'white',
+    flexShrink: 0
   },
   chart: {
     display: 'flex',
     gap: '2rem',
     alignItems: 'flex-end',
-    padding: '1rem 0',
-    justifyContent: 'center'
+    padding: '1.5rem 0',
+    justifyContent: 'center',
+    minHeight: '160px'
   },
   chartBar: {
     display: 'flex',
@@ -801,18 +845,21 @@ const styles = {
   },
   bar: {
     width: '60px',
-    background: 'var(--primary)',
-    borderRadius: 'var(--radius-sm) var(--radius-sm) 0 0'
+    background: 'linear-gradient(to top, var(--primary), var(--primary-light))',
+    borderRadius: 'var(--radius-sm) var(--radius-sm) 0 0',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
   },
   chartLabel: {
     fontSize: '0.75rem',
-    color: 'var(--text-muted)'
+    color: 'var(--text-muted)',
+    fontWeight: '500'
   },
   chartNote: {
     fontSize: '0.75rem',
     color: 'var(--text-muted)',
     textAlign: 'center',
-    marginTop: '1rem'
+    marginTop: '0.5rem'
   },
   cardHeader: {
     display: 'flex',

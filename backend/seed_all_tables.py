@@ -6,17 +6,21 @@ Creates:
 - 1 Teacher
 - 2 Classes
 - 20 Students (10 per class)
+- Metrics data for school analytics
 """
 from datetime import datetime, date, timedelta
 import random
 from app import create_app, db
-from app.models import School, Teacher, Class, Child
+from app.models import School, Teacher, Class, Child, SchoolWeeklyMetrics, ChildDailyMetrics, EventRaw
 
 
 def clear_all_tables():
     """Clear all existing data from core tables."""
     print("Clearing tables...")
     
+    EventRaw.query.delete()
+    ChildDailyMetrics.query.delete()
+    SchoolWeeklyMetrics.query.delete()
     Child.query.delete()
     Class.query.delete()
     Teacher.query.delete()
@@ -127,6 +131,91 @@ def seed_children(class1, class2):
     return children
 
 
+def seed_events_and_metrics(school, children):
+    """Create event data and metrics for analytics."""
+    print("Seeding Events and Metrics...")
+    
+    skills = ['attention', 'patience', 'sensory', 'emotionAwareness', 'bodyAwareness']
+    
+    # Refresh children to ensure child_code is loaded
+    db.session.refresh(school)
+    for child in children:
+        db.session.refresh(child)
+    
+    # Create events for the last 30 days
+    events_created = 0
+    for child in children:
+        for day_offset in range(30):
+            event_date = date.today() - timedelta(days=day_offset)
+            # Random 1-5 sessions per day
+            num_sessions = random.randint(1, 5)
+            
+            for _ in range(num_sessions):
+                event = EventRaw(
+                    child_code=child.child_code,
+                    puzzle_id=f"puzzle_{random.randint(1, 20)}",
+                    skill_tags=random.sample(skills, k=random.randint(1, 3)),
+                    started_at=datetime.combine(event_date, datetime.min.time()),
+                    ended_at=datetime.combine(event_date, datetime.min.time()) + timedelta(minutes=random.randint(2, 10)),
+                    completed=random.choice([True, False])
+                )
+                db.session.add(event)
+                events_created += 1
+    
+    db.session.commit()
+    print(f"✓ Created {events_created} event records")
+    
+    # Create daily metrics for children
+    metrics_created = 0
+    for child in children:
+        for day_offset in range(30):
+            metric_date = date.today() - timedelta(days=day_offset)
+            
+            # Random skill scores
+            skill_scores = {skill: round(random.uniform(0.5, 1.0), 2) for skill in skills}
+            
+            metric = ChildDailyMetrics(
+                child_id=child.id,
+                date=metric_date,
+                sessions_count=random.randint(1, 5),
+                avg_duration=random.randint(120, 600),  # 2-10 minutes
+                skill_scores=skill_scores
+            )
+            db.session.add(metric)
+            metrics_created += 1
+    
+    db.session.commit()
+    print(f"✓ Created {metrics_created} daily metrics records")
+    
+    # Create school weekly metrics for the last 4 weeks
+    for week_offset in range(4):
+        week_start = date.today() - timedelta(weeks=week_offset, days=date.today().weekday())
+        
+        # Calculate metrics based on children data
+        avg_sessions = sum(random.randint(2, 4) for _ in children) / len(children)
+        top_skills = random.sample(skills, k=5)
+        
+        metrics_data = {
+            'app_install_rate': round(random.uniform(75, 95), 1),
+            'avg_daily_sessions': round(avg_sessions, 1),
+            'top_skills': top_skills,
+            'weekly_engagement': [round(random.uniform(0.6, 1.0), 2) for _ in range(4)],
+            'total_teachers': 2,
+            'total_classes': 2,
+            'total_students': len(children)
+        }
+        
+        school_metric = SchoolWeeklyMetrics(
+            school_id=school.id,
+            week_start_date=week_start,
+            metrics=metrics_data
+        )
+        db.session.add(school_metric)
+    
+    db.session.commit()
+    print(f"✓ Created 4 school weekly metrics records")
+
+
 
 
 
@@ -142,6 +231,7 @@ def seed_all():
     admin, teacher = seed_teachers(school)
     class1, class2 = seed_classes(school, teacher)
     children = seed_children(class1, class2)
+    seed_events_and_metrics(school, children)
     
     print("\n" + "="*60)
     print("SEEDING COMPLETE!")
@@ -153,8 +243,9 @@ Summary:
   ✓ 1 Teacher (email: teacher@sunshine.edu, password: password123)
   ✓ 2 Classes
   ✓ 20 Children (10 per class)
+  ✓ Events and Metrics data for analytics
 
-Total: 24 records
+Total: 24+ records with analytics data
     """)
 
 
