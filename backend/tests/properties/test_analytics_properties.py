@@ -510,10 +510,10 @@ class TestChildMetricsComputation:
             # Get skill profile
             profile = AnalyticsService.get_skill_profile(child.id)
             
-            # Assert skill score for attention
+            # Assert skill score for attention (now as percentage 0-100)
             total = completed_count + incomplete_count
-            expected_score = completed_count / total
-            assert abs(profile.attention - expected_score) < 0.001
+            expected_score = round((completed_count / total) * 100, 1)
+            assert abs(profile.attention - expected_score) < 0.1
 
     
     @settings(max_examples=100, suppress_health_check=[HealthCheck.function_scoped_fixture], deadline=None)

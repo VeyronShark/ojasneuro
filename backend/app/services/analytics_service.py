@@ -162,7 +162,7 @@ class AnalyticsService:
             events: List of EventRaw instances
             
         Returns:
-            Dictionary mapping skill tags to scores (0.0 to 1.0)
+            Dictionary mapping skill tags to scores (0.0 to 100.0)
         """
         if not events:
             return {}
@@ -178,7 +178,8 @@ class AnalyticsService:
         scores = {}
         for skill_tag in VALID_SKILL_TAGS:
             if skill_tag in skill_counts and skill_counts[skill_tag]['total'] > 0:
-                scores[skill_tag] = skill_counts[skill_tag]['completed'] / skill_counts[skill_tag]['total']
+                # Convert to percentage (0-100)
+                scores[skill_tag] = round((skill_counts[skill_tag]['completed'] / skill_counts[skill_tag]['total']) * 100, 1)
             else:
                 scores[skill_tag] = None
         

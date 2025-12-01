@@ -29,7 +29,7 @@ class Class(db.Model):
     def __repr__(self):
         return f'<Class {self.name}>'
     
-    def to_dict(self, include_teacher=False, include_children=False):
+    def to_dict(self, include_teacher=False, include_children=False, include_student_count=False):
         """Serialize class to dictionary for JSON response."""
         data = {
             'id': self.id,
@@ -42,6 +42,8 @@ class Class(db.Model):
             data['primary_teacher'] = self.primary_teacher.to_dict()
         if include_children:
             data['children'] = [child.to_dict() for child in self.children]
+        if include_student_count:
+            data['student_count'] = self.children.count()
         return data
     
     @classmethod

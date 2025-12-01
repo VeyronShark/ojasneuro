@@ -218,10 +218,10 @@ def delete_class(class_id: int):
 @classes_bp.route('/<int:class_id>/children', methods=['GET'])
 @jwt_required()
 def get_class_children(class_id: int):
-    """Get all children enrolled in a class.
+    """Get all children enrolled in a class with their metrics.
     
     Returns:
-        200: List of children
+        200: List of children with engagement metrics
         401: If not authenticated
         403: If user doesn't have access to the class
         404: If class not found
@@ -229,11 +229,79 @@ def get_class_children(class_id: int):
     user_id = get_jwt_identity()
     
     try:
+        from datetime import date, timedelta
+        from app.models.event import EventRaw
+        from app.models.metrics import ChildDailyMetrics
+        from sqlalchemy import func
+        
         user = AuthService.get_current_user(user_id)
         children = ClassService.get_children(class_id, user)
         
+        # Prepare enriched children data with metrics
+        enriched_children = []
+        
+        for child in children:
+            child_data = child.to_dict()
+            
+            # Get last 30 days of data for metrics
+            end_date = date.today()
+            start_date = end_date - timedelta(days=30)
+            
+            # Get events for this child in the last 30 days
+            events = EventRaw.query.filter(
+                EventRaw.child_code == child.child_code,
+                func.date(EventRaw.started_at) >= start_date,
+                func.date(EventRaw.started_at) <= end_date
+            ).all()
+            
+            # Calculate total sessions
+            total_sessions = len(events)
+            
+            # Calculate avg sessions per day (over 30 days)
+            avg_sessions_per_day = total_sessions / 30.0 if total_sessions > 0 else 0
+            
+            # Determine engagement level
+            if avg_sessions_per_day >= 1.5:
+                engagement = 'high'
+            elif avg_sessions_per_day >= 0.5:
+                engagement = 'medium'
+            else:
+                engagement = 'low'
+            
+            # Calculate trend (compare last 7 days vs previous 7 days)
+            last_7_days_start = end_date - timedelta(days=7)
+            prev_7_days_start = end_date - timedelta(days=14)
+            
+            last_7_sessions = len([e for e in events if e.started_at.date() >= last_7_days_start])
+            prev_7_sessions = len([e for e in events if prev_7_days_start <= e.started_at.date() < last_7_days_start])
+            
+            if last_7_sessions > prev_7_sessions:
+                trend = 'up'
+            elif last_7_sessions < prev_7_sessions:
+                trend = 'down'
+            else:
+                trend = 'stable'
+            
+            # Calculate weekly activity (last 7 days)
+            weekly_activity = []
+            for i in range(7):
+                day_date = end_date - timedelta(days=6-i)
+                day_sessions = len([e for e in events if e.started_at.date() == day_date])
+                weekly_activity.append(day_sessions)
+            
+            # Add metrics to child data
+            child_data['metrics'] = {
+                'engagement': engagement,
+                'avg_sessions_per_day': round(avg_sessions_per_day, 2),
+                'trend': trend,
+                'weekly_activity': weekly_activity,
+                'total_sessions_30d': total_sessions
+            }
+            
+            enriched_children.append(child_data)
+        
         return jsonify({
-            'children': [child.to_dict() for child in children]
+            'children': enriched_children
         }), 200
         
     except AuthenticationError as e:

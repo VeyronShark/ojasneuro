@@ -38,6 +38,14 @@ export default function ClassView() {
     refresh: refreshStudents 
   } = useStudents(classId)
   
+  // Debug: Log students data to verify metrics are being received
+  useEffect(() => {
+    if (students.length > 0) {
+      console.log('Students data:', students)
+      console.log('First student metrics:', students[0]?.metrics)
+    }
+  }, [students])
+  
   // Modal states
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -57,7 +65,10 @@ export default function ClassView() {
       setClassLoading(true)
       setClassError(null)
       try {
-        const data = await classesAPI.getById(classId)
+        const response = await classesAPI.getById(classId)
+        // Extract class data from response
+        const data = response.class || response
+        console.log('Class data received:', data)
         setClassData(data)
       } catch (err) {
         setClassError(err.message || 'Failed to load class')
@@ -77,10 +88,12 @@ export default function ClassView() {
       setMetricsLoading(true)
       try {
         const data = await analyticsAPI.getClassMetrics(classId)
+        console.log('Class metrics received:', data)
         setMetrics(data)
       } catch (err) {
         // Metrics are optional, don't show error
         console.warn('Failed to fetch class metrics:', err.message)
+        setMetrics(null)
       } finally {
         setMetricsLoading(false)
       }
@@ -225,6 +238,23 @@ export default function ClassView() {
 
   return (
     <Layout title={classData?.name || 'Class View'}>
+      {/* Class Info Header */}
+      <div style={styles.classHeader}>
+        <div style={styles.classInfo}>
+          <h2 style={styles.className}>{classData?.name || 'Class'}</h2>
+          <div style={styles.classDetails}>
+            {classData?.grade_level && (
+              <span style={styles.gradeBadge}>{classData.grade_level}</span>
+            )}
+            {classData?.primary_teacher && (
+              <span style={styles.teacherInfo}>
+                Teacher: {classData.primary_teacher.name}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+      
       {/* Class Metrics Header */}
       {metricsLoading ? (
         <div style={styles.metricsGrid}>
@@ -235,13 +265,16 @@ export default function ClassView() {
       ) : metrics && (
         <div style={styles.metricsGrid}>
           <Card title="Total Students">
-            <div style={styles.metricValue}>{metrics.total_students || students.length}</div>
+            <div style={styles.metricValue}>{metrics.active_children || students.length}</div>
+            <div style={styles.metricLabel}>Enrolled in class</div>
           </Card>
-          <Card title="Active This Week">
-            <div style={styles.metricValue}>{metrics.active_this_week || 0}</div>
+          <Card title="Avg Sessions">
+            <div style={styles.metricValue}>{metrics.avg_sessions_per_child?.toFixed(1) || '0'}</div>
+            <div style={styles.metricLabel}>Per child (all time)</div>
           </Card>
-          <Card title="Avg Sessions/Day">
-            <div style={styles.metricValue}>{metrics.avg_sessions_per_day?.toFixed(1) || '0'}</div>
+          <Card title="Total Sessions">
+            <div style={styles.metricValue}>{metrics.total_sessions || 0}</div>
+            <div style={styles.metricLabel}>Across all students</div>
           </Card>
         </div>
       )}
@@ -316,9 +349,15 @@ export default function ClassView() {
             </thead>
             <tbody>
               {filteredStudents.map(student => {
+                // Extract student data
+                const studentName = student.display_name || student.name
+                const studentAge = student.age || '-'
+                const childCode = student.child_code || '-'
+                
+                // For now, show basic info - metrics will be added when we enhance the endpoint
                 const studentMetrics = student.metrics || {}
                 const engagement = student.engagement || studentMetrics.engagement || 'medium'
-                const avgSessions = student.avgSessionsPerDay || studentMetrics.avg_sessions_per_day || studentMetrics.avg_duration || 0
+                const avgSessions = student.avgSessionsPerDay || studentMetrics.avg_sessions_per_day || 0
                 const trend = student.trend || studentMetrics.trend || 'stable'
                 const weeklyActivity = student.weeklyActivity || studentMetrics.weekly_activity || [0, 0, 0, 0, 0, 0, 0]
                 
@@ -328,8 +367,15 @@ export default function ClassView() {
                     onClick={() => navigate(`/child/${student.id}`)}
                     style={styles.row}
                   >
-                    <td style={styles.td}>{student.display_name || student.name}</td>
-                    <td style={styles.td}>{student.age || '-'}</td>
+                    <td style={styles.td}>
+                      <div style={styles.studentInfo}>
+                        <div style={styles.studentName}>{studentName}</div>
+                        <div style={styles.studentCode}>{childCode}</div>
+                      </div>
+                    </td>
+                    <td style={styles.td}>
+                      <span style={styles.ageBadge}>{studentAge}</span>
+                    </td>
                     <td style={styles.td}>
                       <span style={{
                         ...styles.badge,
@@ -339,7 +385,11 @@ export default function ClassView() {
                         {engagement}
                       </span>
                     </td>
-                    <td style={styles.td}>{typeof avgSessions === 'number' ? avgSessions.toFixed(1) : avgSessions}</td>
+                    <td style={styles.td}>
+                      {typeof avgSessions === 'number' && avgSessions > 0 
+                        ? avgSessions.toFixed(1) 
+                        : '-'}
+                    </td>
                     <td style={styles.td}>{getTrendIcon(trend)}</td>
                     <td style={styles.td}>
                       <div style={styles.heatmap}>
@@ -499,6 +549,42 @@ export default function ClassView() {
 }
 
 const styles = {
+  classHeader: {
+    marginBottom: '2rem',
+    padding: '1.5rem',
+    background: 'var(--bg-secondary)',
+    borderRadius: 'var(--radius-lg)',
+    border: '1px solid var(--border)'
+  },
+  classInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.75rem'
+  },
+  className: {
+    fontSize: '1.75rem',
+    fontWeight: '700',
+    color: 'var(--text-primary)',
+    margin: 0
+  },
+  classDetails: {
+    display: 'flex',
+    gap: '1rem',
+    alignItems: 'center',
+    flexWrap: 'wrap'
+  },
+  gradeBadge: {
+    padding: '0.375rem 0.875rem',
+    background: 'var(--primary-light)',
+    borderRadius: 'var(--radius-full)',
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    color: 'var(--primary-dark)'
+  },
+  teacherInfo: {
+    fontSize: '0.9375rem',
+    color: 'var(--text-secondary)'
+  },
   metricsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(3, 1fr)',
@@ -508,7 +594,12 @@ const styles = {
   metricValue: {
     fontSize: '2rem',
     fontWeight: '600',
-    color: 'var(--primary)'
+    color: 'var(--primary)',
+    marginBottom: '0.25rem'
+  },
+  metricLabel: {
+    fontSize: '0.8125rem',
+    color: 'var(--text-muted)'
   },
   filters: {
     display: 'flex',
@@ -543,6 +634,33 @@ const styles = {
   th: tableStyles.th,
   row: tableStyles.row,
   td: tableStyles.td,
+  studentInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.25rem'
+  },
+  studentName: {
+    fontWeight: '500',
+    color: 'var(--text-primary)'
+  },
+  studentCode: {
+    fontSize: '0.75rem',
+    color: 'var(--text-muted)',
+    fontFamily: 'monospace'
+  },
+  ageBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '32px',
+    height: '32px',
+    padding: '0 0.5rem',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    borderRadius: '50%',
+    fontSize: '0.875rem',
+    fontWeight: '700',
+    color: 'white'
+  },
   badge: {
     padding: '0.375rem 0.875rem',
     borderRadius: 'var(--radius-lg)',

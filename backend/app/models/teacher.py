@@ -41,7 +41,7 @@ class Teacher(db.Model):
         """Check if the user has admin role."""
         return self.role == 'admin'
     
-    def to_dict(self, include_school=False):
+    def to_dict(self, include_school=False, include_classes=False):
         """Serialize teacher to dictionary for JSON response.
         
         Note: password_hash is never included for security.
@@ -55,6 +55,11 @@ class Teacher(db.Model):
         }
         if include_school and self.school:
             data['school'] = self.school.to_dict()
+        if include_classes:
+            # Get classes where this teacher is the primary teacher
+            classes = list(self.primary_classes.all())
+            data['classes'] = [{'id': c.id, 'name': c.name} for c in classes]
+            data['class_count'] = len(classes)
         return data
     
     @classmethod

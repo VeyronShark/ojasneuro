@@ -55,6 +55,13 @@ export default function AdminDashboard() {
     refresh: refreshClasses 
   } = useClasses(schoolId)
   
+  // Debug: Log classes data when it changes
+  useEffect(() => {
+    if (classes.length > 0) {
+      console.log('Classes data:', classes)
+    }
+  }, [classes])
+  
   // Modal states
   const [showAddClassModal, setShowAddClassModal] = useState(false)
   const [showEditClassModal, setShowEditClassModal] = useState(false)
@@ -129,7 +136,9 @@ export default function AdminDashboard() {
       setTeachersError(null)
       try {
         const response = await teachersAPI.getAll(schoolId)
-        setTeachers(response.teachers || response || [])
+        const teachersData = response.teachers || response || []
+        console.log('Teachers data received:', teachersData)
+        setTeachers(teachersData)
       } catch (err) {
         setTeachersError(err.message || 'Failed to load teachers')
       } finally {
@@ -375,33 +384,86 @@ export default function AdminDashboard() {
       )
     }
     
+    // Calculate summary stats
+    const totalTeachers = teachers.length
+    const totalAdmins = teachers.filter(t => t.role === 'admin').length
+    const totalRegularTeachers = totalTeachers - totalAdmins
+    const totalAssignedClasses = teachers.reduce((sum, t) => sum + (t.class_count || 0), 0)
+    
     return (
-      <Card title="All Teachers">
-        <table style={styles.table}>
+      <>
+        {/* Summary Cards */}
+        <div style={styles.summaryGrid}>
+          <Card>
+            <div style={styles.summaryItem}>
+              <div style={styles.summaryValue}>{totalTeachers}</div>
+              <div style={styles.summaryLabel}>Total Staff</div>
+            </div>
+          </Card>
+          <Card>
+            <div style={styles.summaryItem}>
+              <div style={styles.summaryValue}>{totalRegularTeachers}</div>
+              <div style={styles.summaryLabel}>Teachers</div>
+            </div>
+          </Card>
+          <Card>
+            <div style={styles.summaryItem}>
+              <div style={styles.summaryValue}>{totalAdmins}</div>
+              <div style={styles.summaryLabel}>Administrators</div>
+            </div>
+          </Card>
+        </div>
+        
+        <Card title="All Teachers">
+          <table style={styles.table}>
           <thead>
             <tr>
               <th style={styles.th}>Name</th>
               <th style={styles.th}>Email</th>
               <th style={styles.th}>Role</th>
               <th style={styles.th}>Assigned Classes</th>
+              <th style={styles.th}>Class Count</th>
             </tr>
           </thead>
           <tbody>
-            {teachers.map(teacher => (
-              <tr key={teacher.id} style={styles.row}>
-                <td style={styles.td}>{teacher.name}</td>
-                <td style={styles.td}>{teacher.email}</td>
-                <td style={styles.td}>
-                  <span style={styles.roleBadge}>{teacher.role || 'Teacher'}</span>
-                </td>
-                <td style={styles.td}>
-                  {teacher.class_names?.join(', ') || teacher.classes?.map(c => c.name).join(', ') || '-'}
-                </td>
-              </tr>
-            ))}
+            {teachers.map(teacher => {
+              const roleStyle = teacher.role === 'admin' 
+                ? { ...styles.roleBadge, ...styles.adminBadge }
+                : styles.roleBadge
+              
+              // Extract class information
+              const teacherClasses = teacher.classes || []
+              const classNames = teacherClasses.length > 0 
+                ? teacherClasses.map(c => c.name).join(', ') 
+                : '-'
+              const classCount = teacher.class_count !== undefined 
+                ? teacher.class_count 
+                : teacherClasses.length
+              
+              return (
+                <tr key={teacher.id} style={styles.row}>
+                  <td style={styles.td}>{teacher.name}</td>
+                  <td style={styles.td}>{teacher.email}</td>
+                  <td style={styles.td}>
+                    <span style={roleStyle}>
+                      {teacher.role === 'admin' ? 'Administrator' : 'Teacher'}
+                    </span>
+                  </td>
+                  <td style={styles.td}>
+                    <div style={styles.classNamesList}>
+                      {classNames}
+                    </div>
+                  </td>
+                  <td style={styles.td}>
+                    <span style={styles.countBadge}>{classCount}</span>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </Card>
+      </>
     )
   }
 
@@ -422,14 +484,44 @@ export default function AdminDashboard() {
       )
     }
     
+    // Calculate summary stats
+    const totalClasses = classes.length
+    const totalStudentsInClasses = classes.reduce((sum, c) => sum + (c.student_count || 0), 0)
+    const avgStudentsPerClass = totalClasses > 0 ? Math.round(totalStudentsInClasses / totalClasses) : 0
+    
     return (
-      <Card title="All Classrooms">
-        <div style={styles.cardHeader}>
-          <button onClick={() => setShowAddClassModal(true)} style={buttonStyles.primary}>
-            <Plus size={18} />
-            <span>Add Classroom</span>
-          </button>
-        </div>
+      <>
+        {/* Summary Cards */}
+        {classes.length > 0 && (
+          <div style={styles.summaryGrid}>
+            <Card>
+              <div style={styles.summaryItem}>
+                <div style={styles.summaryValue}>{totalClasses}</div>
+                <div style={styles.summaryLabel}>Total Classes</div>
+              </div>
+            </Card>
+            <Card>
+              <div style={styles.summaryItem}>
+                <div style={styles.summaryValue}>{totalStudentsInClasses}</div>
+                <div style={styles.summaryLabel}>Total Students</div>
+              </div>
+            </Card>
+            <Card>
+              <div style={styles.summaryItem}>
+                <div style={styles.summaryValue}>{avgStudentsPerClass}</div>
+                <div style={styles.summaryLabel}>Avg per Class</div>
+              </div>
+            </Card>
+          </div>
+        )}
+        
+        <Card title="All Classrooms">
+          <div style={styles.cardHeader}>
+            <button onClick={() => setShowAddClassModal(true)} style={buttonStyles.primary}>
+              <Plus size={18} />
+              <span>Add Classroom</span>
+            </button>
+          </div>
         
         {classes.length === 0 ? (
           <EmptyState
@@ -451,40 +543,58 @@ export default function AdminDashboard() {
               </tr>
             </thead>
             <tbody>
-              {classes.map(cls => (
-                <tr 
-                  key={cls.id} 
-                  style={styles.row}
-                  onClick={() => navigate(`/class/${cls.id}`)}
-                >
-                  <td style={styles.td}>{cls.name}</td>
-                  <td style={styles.td}>{cls.grade_level || '-'}</td>
-                  <td style={styles.td}>{cls.student_count || cls.studentCount || 0}</td>
-                  <td style={styles.td}>{cls.teacher_name || cls.primary_teacher?.name || '-'}</td>
-                  <td style={styles.td}>
-                    <div style={styles.actions}>
-                      <button
-                        onClick={(e) => openEditClassModal(cls, e)}
-                        style={buttonStyles.ghost}
-                        title="Edit classroom"
-                      >
-                        <Edit2 size={16} />
-                      </button>
-                      <button
-                        onClick={(e) => openDeleteClassDialog(cls, e)}
-                        style={buttonStyles.ghost}
-                        title="Delete classroom"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+              {classes.map(cls => {
+                // Extract data with proper fallbacks
+                const studentCount = cls.student_count !== undefined 
+                  ? cls.student_count 
+                  : (cls.studentCount || 0)
+                const teacherName = cls.primary_teacher?.name || cls.teacher_name || 'Unassigned'
+                const gradeLevel = cls.grade_level || 'Not Set'
+                
+                return (
+                  <tr 
+                    key={cls.id} 
+                    style={styles.row}
+                    onClick={() => navigate(`/class/${cls.id}`)}
+                  >
+                    <td style={styles.td}>
+                      <div style={styles.className}>{cls.name}</div>
+                    </td>
+                    <td style={styles.td}>
+                      <span style={styles.gradeBadge}>{gradeLevel}</span>
+                    </td>
+                    <td style={styles.td}>
+                      <span style={styles.countBadge}>{studentCount}</span>
+                    </td>
+                    <td style={styles.td}>
+                      <div style={styles.teacherName}>{teacherName}</div>
+                    </td>
+                    <td style={styles.td}>
+                      <div style={styles.actions}>
+                        <button
+                          onClick={(e) => openEditClassModal(cls, e)}
+                          style={buttonStyles.ghost}
+                          title="Edit classroom"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button
+                          onClick={(e) => openDeleteClassDialog(cls, e)}
+                          style={buttonStyles.ghost}
+                          title="Delete classroom"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         )}
       </Card>
+      </>
     )
   }
   
@@ -557,24 +667,39 @@ export default function AdminDashboard() {
                 <th style={styles.th}>Name</th>
                 <th style={styles.th}>Age</th>
                 <th style={styles.th}>Class</th>
+                <th style={styles.th}>Grade Level</th>
                 <th style={styles.th}>Child Code</th>
               </tr>
             </thead>
             <tbody>
-              {filteredStudents.map(student => (
-                <tr 
-                  key={student.id} 
-                  style={styles.row}
-                  onClick={() => navigate(`/child/${student.id}`)}
-                >
-                  <td style={styles.td}>{student.display_name || student.name}</td>
-                  <td style={styles.td}>{student.age || '-'}</td>
-                  <td style={styles.td}>{student.class_name || student.class?.name || '-'}</td>
-                  <td style={styles.td}>
-                    <code style={styles.code}>{student.child_code || '-'}</code>
-                  </td>
-                </tr>
-              ))}
+              {filteredStudents.map(student => {
+                const className = student.class?.name || student.class_name || '-'
+                const gradeLevel = student.class?.grade_level || '-'
+                
+                return (
+                  <tr 
+                    key={student.id} 
+                    style={styles.row}
+                    onClick={() => navigate(`/child/${student.id}`)}
+                  >
+                    <td style={styles.td}>
+                      <div style={styles.studentName}>
+                        {student.display_name || student.name}
+                      </div>
+                    </td>
+                    <td style={styles.td}>
+                      <span style={styles.ageBadge}>{student.age || '-'}</span>
+                    </td>
+                    <td style={styles.td}>{className}</td>
+                    <td style={styles.td}>
+                      <span style={styles.gradeBadge}>{gradeLevel}</span>
+                    </td>
+                    <td style={styles.td}>
+                      <code style={styles.code}>{student.child_code || '-'}</code>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         )}
@@ -913,6 +1038,24 @@ const styles = {
     ...badgeStyles.default,
     ...badgeStyles.primary
   },
+  adminBadge: {
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    color: 'white',
+    fontWeight: '600'
+  },
+  countBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '28px',
+    height: '28px',
+    padding: '0 0.5rem',
+    background: 'var(--bg-tertiary)',
+    borderRadius: '50%',
+    fontSize: '0.875rem',
+    fontWeight: '600',
+    color: 'var(--text-primary)'
+  },
   code: {
     padding: '0.375rem 0.625rem',
     background: 'var(--bg-tertiary)',
@@ -920,6 +1063,44 @@ const styles = {
     fontSize: '0.8125rem',
     fontFamily: 'monospace',
     color: 'var(--text-primary)'
+  },
+  studentName: {
+    fontWeight: '500',
+    color: 'var(--text-primary)'
+  },
+  className: {
+    fontWeight: '600',
+    color: 'var(--text-primary)',
+    fontSize: '0.9375rem'
+  },
+  classNamesList: {
+    color: 'var(--text-secondary)',
+    fontSize: '0.875rem'
+  },
+  teacherName: {
+    color: 'var(--text-secondary)',
+    fontSize: '0.875rem'
+  },
+  ageBadge: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minWidth: '32px',
+    height: '32px',
+    padding: '0 0.5rem',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    borderRadius: '50%',
+    fontSize: '0.875rem',
+    fontWeight: '700',
+    color: 'white'
+  },
+  gradeBadge: {
+    padding: '0.25rem 0.75rem',
+    background: 'var(--primary-light)',
+    borderRadius: 'var(--radius-full)',
+    fontSize: '0.8125rem',
+    fontWeight: '500',
+    color: 'var(--primary-dark)'
   },
   actions: {
     display: 'flex',

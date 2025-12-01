@@ -66,7 +66,7 @@ def get_school_classes(school_id: int):
     """Get all classes belonging to a school.
     
     Returns:
-        200: List of classes
+        200: List of classes with teacher and student count
         401: If not authenticated
         403: If user doesn't have access to the school
         404: If school not found
@@ -78,7 +78,7 @@ def get_school_classes(school_id: int):
         classes = SchoolService.get_classes(school_id, user)
         
         return jsonify({
-            'classes': [c.to_dict(include_teacher=True) for c in classes]
+            'classes': [c.to_dict(include_teacher=True, include_student_count=True) for c in classes]
         }), 200
         
     except AuthenticationError as e:
@@ -110,7 +110,7 @@ def get_school_teachers(school_id: int):
     """Get all teachers belonging to a school.
     
     Returns:
-        200: List of teachers
+        200: List of teachers with their assigned classes
         401: If not authenticated
         403: If user doesn't have access to the school or is not an admin
         404: If school not found
@@ -122,7 +122,7 @@ def get_school_teachers(school_id: int):
         teachers = SchoolService.get_teachers(school_id, user)
         
         return jsonify({
-            'teachers': [t.to_dict() for t in teachers]
+            'teachers': [t.to_dict(include_classes=True) for t in teachers]
         }), 200
         
     except AuthenticationError as e:

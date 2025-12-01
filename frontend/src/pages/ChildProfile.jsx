@@ -189,13 +189,22 @@ export default function ChildProfile() {
   }
   
   // Get skill width percentage
-  const getSkillWidth = (level) => {
-    if (typeof level === 'number') {
-      return `${Math.min(100, Math.max(0, level))}%`
+  const getSkillWidth = (score) => {
+    if (typeof score === 'number') {
+      // Score is already a percentage (0-100)
+      return `${Math.min(100, Math.max(0, score))}%`
     }
-    if (level === 'high') return '100%'
-    if (level === 'medium') return '60%'
+    if (score === 'high') return '100%'
+    if (score === 'medium') return '60%'
     return '30%'
+  }
+  
+  // Format skill score for display
+  const formatSkillScore = (score) => {
+    if (typeof score === 'number') {
+      return `${score.toFixed(1)}%`
+    }
+    return score
   }
 
   // Generate insight text from insights array or fallback
@@ -206,8 +215,7 @@ export default function ChildProfile() {
       return firstInsight.text || firstInsight.message || firstInsight.content || JSON.stringify(firstInsight)
     }
     
-    // Fallback insight based on skills
-    const skills = skillProfile?.skills || skillProfile?.skill_scores || metrics?.skill_scores || {}
+    // Fallback insight based on skills (use the skills object we already computed)
     const lowSkills = Object.entries(skills)
       .filter(([_, level]) => {
         if (typeof level === 'number') return level < 40
@@ -271,13 +279,61 @@ export default function ChildProfile() {
   const displayAge = child.age || '-'
   const className = classData?.name || 'Unknown Class'
   
-  // Get metrics values
-  const avgSessionsPerDay = metrics?.avg_sessions_per_day || metrics?.sessions_count || child.avgSessionsPerDay || 0
-  const trend = metrics?.trend || child.trend || 'stable'
-  const weeklyActivity = metrics?.weekly_activity || child.weeklyActivity || [0, 0, 0, 0, 0, 0, 0]
+  // Calculate avg sessions per day from metrics
+  const calculateAvgSessionsPerDay = () => {
+    if (!metrics) return 0
+    const totalSessions = metrics.total_sessions || 0
+    const dateRange = metrics.date_range
+    if (!dateRange || !dateRange.start_date || !dateRange.end_date) return 0
+    
+    const startDate = new Date(dateRange.start_date)
+    const endDate = new Date(dateRange.end_date)
+    const daysDiff = Math.max(1, Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)))
+    
+    return totalSessions / daysDiff
+  }
   
-  // Get skills from skill profile or metrics
-  const skills = skillProfile?.skills || skillProfile?.skill_scores || metrics?.skill_scores || child.skills || {}
+  const avgSessionsPerDay = calculateAvgSessionsPerDay()
+  const trend = metrics?.trend || 'stable'
+  
+  // Extract weekly activity from daily_metrics
+  const getWeeklyActivity = () => {
+    if (!metrics?.daily_metrics || metrics.daily_metrics.length === 0) {
+      return [0, 0, 0, 0, 0, 0, 0]
+    }
+    
+    // Get last 7 days of data
+    const last7Days = metrics.daily_metrics.slice(-7)
+    return last7Days.map(day => day.sessions_count || 0)
+  }
+  
+  const weeklyActivity = getWeeklyActivity()
+  
+  // Convert skill profile to skills object
+  const getSkills = () => {
+    if (!skillProfile) return {}
+    
+    const skills = {}
+    if (skillProfile.attention !== null && skillProfile.attention !== undefined) {
+      skills.attention = skillProfile.attention
+    }
+    if (skillProfile.patience !== null && skillProfile.patience !== undefined) {
+      skills.patience = skillProfile.patience
+    }
+    if (skillProfile.sensory !== null && skillProfile.sensory !== undefined) {
+      skills.sensory = skillProfile.sensory
+    }
+    if (skillProfile.emotionAwareness !== null && skillProfile.emotionAwareness !== undefined) {
+      skills['emotion awareness'] = skillProfile.emotionAwareness
+    }
+    if (skillProfile.bodyAwareness !== null && skillProfile.bodyAwareness !== undefined) {
+      skills['body awareness'] = skillProfile.bodyAwareness
+    }
+    
+    return skills
+  }
+  
+  const skills = getSkills()
 
   return (
     <Layout>
@@ -333,7 +389,7 @@ export default function ChildProfile() {
                       />
                     </div>
                     <div style={styles.skillLevel}>
-                      {typeof level === 'number' ? `${level}%` : level}
+                      {formatSkillScore(level)}
                     </div>
                   </div>
                 )

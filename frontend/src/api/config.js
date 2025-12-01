@@ -148,18 +148,27 @@ export const classesAPI = {
 
 // Students/Children API
 export const studentsAPI = {
-  getById: (id) => apiRequest(`/children/${id}`),
+  getById: async (id) => {
+    const response = await apiRequest(`/children/${id}`);
+    return response.child || response;
+  },
   getMetrics: (childId) => apiRequest(`/analytics/child/${childId}`),
-  getSkillProfile: (childId) => apiRequest(`/children/${childId}/skill-profile`),
+  getSkillProfile: (childId) => apiRequest(`/analytics/children/${childId}/skill-profile`),
   getInsights: (childId) => apiRequest(`/insights/child/${childId}`),
-  create: (data) => apiRequest('/children', {
-    method: 'POST',
-    body: JSON.stringify(data),
-  }),
-  update: (id, data) => apiRequest(`/children/${id}`, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  }),
+  create: async (data) => {
+    const response = await apiRequest('/children', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+    return response.child || response;
+  },
+  update: async (id, data) => {
+    const response = await apiRequest(`/children/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+    return response.child || response;
+  },
   delete: (id) => apiRequest(`/children/${id}`, {
     method: 'DELETE',
   }),
@@ -188,7 +197,7 @@ export const eventsAPI = {
 
 // Insights API
 export const insightsAPI = {
-  getByChild: (childId) => apiRequest(`/insights/child/${childId}`),
+  getByChild: (childId) => apiRequest(`/insights/children/${childId}/insights`),
   getByClass: (classId) => apiRequest(`/insights/class/${classId}`),
 };
 

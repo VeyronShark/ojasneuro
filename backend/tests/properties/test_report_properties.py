@@ -237,8 +237,8 @@ class TestChildReportContainsRequiredData:
             # Assert skill scores are present
             assert skill_tag in report_data.skill_scores
             assert report_data.skill_scores[skill_tag] is not None
-            # All events completed, so score should be 1.0
-            assert report_data.skill_scores[skill_tag] == 1.0
+            # All events completed, so score should be 100.0 (percentage)
+            assert report_data.skill_scores[skill_tag] == 100.0
     
     @settings(max_examples=100, suppress_health_check=[HealthCheck.function_scoped_fixture], deadline=None)
     @given(num_events=st.integers(min_value=1, max_value=10))

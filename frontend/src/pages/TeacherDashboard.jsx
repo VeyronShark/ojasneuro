@@ -9,7 +9,7 @@ import Modal from '../components/Modal'
 import EmptyState from '../components/EmptyState'
 import { useClasses } from '../hooks/useClasses'
 import { analyticsAPI } from '../api/config'
-import { Plus, Users, TrendingUp, Award } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { buttonStyles, formStyles } from '../styles/commonStyles'
 
 export default function TeacherDashboard() {
@@ -39,18 +39,54 @@ export default function TeacherDashboard() {
     ? classes.filter(c => userClassIds.includes(c.id))
     : classes // Show all classes if no classIds (new user or admin)
   
-  // Fetch metrics for the first class (or aggregate)
+  // Fetch metrics for all classes and aggregate
   useEffect(() => {
     async function fetchMetrics() {
       if (filteredClasses.length === 0) return
       
       setMetricsLoading(true)
       try {
-        // Fetch metrics for the first class as a sample
-        const classMetrics = await analyticsAPI.getClassMetrics(filteredClasses[0].id)
-        setMetrics(classMetrics)
+        // Fetch metrics for all classes
+        const metricsPromises = filteredClasses.map(cls => 
+          analyticsAPI.getClassMetrics(cls.id).catch(err => {
+            console.warn(`Failed to fetch metrics for class ${cls.id}:`, err.message)
+            return null
+          })
+        )
+        
+        const allMetrics = await Promise.all(metricsPromises)
+        const validMetrics = allMetrics.filter(m => m !== null)
+        
+        // Aggregate metrics across all classes
+        if (validMetrics.length > 0) {
+          const aggregated = {
+            total_children: validMetrics.reduce((sum, m) => sum + (m.total_children || 0), 0),
+            active_children: validMetrics.reduce((sum, m) => sum + (m.active_children || 0), 0),
+            total_sessions: validMetrics.reduce((sum, m) => sum + (m.total_sessions || 0), 0),
+            avg_skill_scores: {}
+          }
+          
+          // Calculate average skill scores across all classes
+          const skillTotals = {}
+          const skillCounts = {}
+          validMetrics.forEach(m => {
+            if (m.avg_skill_scores) {
+              Object.entries(m.avg_skill_scores).forEach(([skill, score]) => {
+                if (score !== null && score !== undefined) {
+                  skillTotals[skill] = (skillTotals[skill] || 0) + score
+                  skillCounts[skill] = (skillCounts[skill] || 0) + 1
+                }
+              })
+            }
+          })
+          
+          Object.keys(skillTotals).forEach(skill => {
+            aggregated.avg_skill_scores[skill] = skillTotals[skill] / skillCounts[skill]
+          })
+          
+          setMetrics(aggregated)
+        }
       } catch (err) {
-        // Metrics are optional, don't show error for this
         console.warn('Failed to fetch class metrics:', err.message)
       } finally {
         setMetricsLoading(false)
@@ -62,15 +98,17 @@ export default function TeacherDashboard() {
     }
   }, [filteredClasses, classesLoading])
   
-  // Calculate statistics from metrics or use defaults
+  // Calculate statistics from aggregated metrics
   const totalStudents = filteredClasses.reduce((sum, c) => sum + (c.student_count || c.studentCount || 0), 0)
-  const activeThisWeek = metrics?.active_this_week || 0
+  const activeThisWeek = metrics?.active_children || 0
   const usagePercent = totalStudents > 0 ? Math.round((activeThisWeek / totalStudents) * 100) : 0
-  const avgPuzzles = metrics?.avg_sessions_per_day?.toFixed(1) || '0'
   
-  // Get top skill from metrics
-  const skillDistribution = metrics?.skill_distribution || {}
-  const topSkillEntry = Object.entries(skillDistribution).sort((a, b) => b[1] - a[1])[0]
+  // Calculate avg sessions per day from total sessions and date range (default 7 days)
+  const avgSessionsPerDay = metrics?.total_sessions ? (metrics.total_sessions / 7).toFixed(1) : '0'
+  
+  // Get top skill from avg_skill_scores
+  const skillScores = metrics?.avg_skill_scores || {}
+  const topSkillEntry = Object.entries(skillScores).sort((a, b) => b[1] - a[1])[0]
   const topSkill = topSkillEntry?.[0] || 'sensory'
   
   // Handle adding a new classroom
@@ -139,12 +177,12 @@ export default function TeacherDashboard() {
           )}
         </Card>
 
-        <Card title="Avg. Puzzles Per Day">
+        <Card title="Avg. Sessions Per Day">
           {metricsLoading ? (
             <LoadingSpinner size="small" message="" />
           ) : (
             <>
-              <div style={styles.statValue}>{avgPuzzles}</div>
+              <div style={styles.statValue}>{avgSessionsPerDay}</div>
               <div style={styles.statLabel}>Across your classes</div>
             </>
           )}
@@ -155,8 +193,15 @@ export default function TeacherDashboard() {
             <LoadingSpinner size="small" message="" />
           ) : (
             <>
-              <div style={styles.skillBadge}>{topSkill.replace(/([A-Z])/g, ' $1').trim()}</div>
-              <div style={styles.statLabel}>Most reinforced in puzzles</div>
+              <div style={styles.skillBadge}>
+                {topSkill
+                  .replace(/([A-Z])/g, ' $1')
+                  .replace(/_/g, ' ')
+                  .trim()
+                  .toLowerCase()
+                  .replace(/^\w/, c => c.toUpperCase())}
+              </div>
+              <div style={styles.statLabel}>Highest average skill score</div>
             </>
           )}
         </Card>
