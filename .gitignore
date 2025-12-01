@@ -40,6 +40,15 @@ Thumbs.db
 *.DOC
 *.DOCX
 
+# Python cache and test artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.hypothesis/
+*.egg-info/
+
 # Logs
 logs/
 *.log
