@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './context/AuthContext'
+import { NotificationProvider } from './context/NotificationContext'
 import Login from './pages/Login'
 import AdminDashboard from './pages/AdminDashboard'
 import TeacherDashboard from './pages/TeacherDashboard'
@@ -32,11 +33,7 @@ function LoadingScreen() {
           margin: '0 auto 1rem'
         }} />
         <p style={{ color: '#6c757d' }}>Loading...</p>
-        <style>{`
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
+        <style>{`\n          @keyframes spin {\n            to { transform: rotate(360deg); }\n          }\n        `}</style>
       </div>
     </div>
   )
@@ -129,7 +126,9 @@ function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <NotificationProvider>
+          <AppRoutes />
+        </NotificationProvider>
       </AuthProvider>
     </BrowserRouter>
   )
