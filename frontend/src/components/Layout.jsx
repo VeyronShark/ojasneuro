@@ -1,5 +1,15 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { 
+  Home, 
+  Users, 
+  BookOpen, 
+  GraduationCap, 
+  MessageCircle, 
+  Lightbulb, 
+  LogOut,
+  School
+} from 'lucide-react'
 
 export default function Layout({ children, title }) {
   const navigate = useNavigate()
@@ -9,7 +19,7 @@ export default function Layout({ children, title }) {
   // School info from user context or defaults
   const school = {
     name: user?.school_name || 'Montessori School',
-    logo: '🏫'
+    logo: <School size={24} />
   }
 
   const handleLogout = async () => {
@@ -40,10 +50,13 @@ export default function Layout({ children, title }) {
             <span style={styles.schoolName}>{school.name}</span>
           </div>
           <div style={styles.userInfo}>
-            <span style={styles.userName}>{user?.name || 'User'}</span>
-            <span style={styles.role}>({user?.role || 'guest'})</span>
+            <div style={styles.userDetails}>
+              <span style={styles.userName}>{user?.name || 'User'}</span>
+              <span style={styles.role}>{user?.role || 'guest'}</span>
+            </div>
             <button onClick={handleLogout} style={styles.logoutBtn}>
-              Logout
+              <LogOut size={16} />
+              <span>Logout</span>
             </button>
           </div>
         </div>
@@ -54,30 +67,36 @@ export default function Layout({ children, title }) {
           onClick={() => navigate(user?.role === 'admin' ? '/admin' : '/teacher')} 
           style={getNavBtnStyle(user?.role === 'admin' ? '/admin' : '/teacher')}
         >
-          Home
+          <Home size={18} />
+          <span>Home</span>
         </button>
         {user?.role === 'admin' && (
           <>
             <button onClick={() => navigate('/admin/teachers')} style={getNavBtnStyle('/admin/teachers')}>
-              Teachers
+              <Users size={18} />
+              <span>Teachers</span>
             </button>
             <button onClick={() => navigate('/admin/classes')} style={getNavBtnStyle('/admin/classes')}>
-              Classes
+              <BookOpen size={18} />
+              <span>Classes</span>
             </button>
             <button onClick={() => navigate('/admin/students')} style={getNavBtnStyle('/admin/students')}>
-              Students
+              <GraduationCap size={18} />
+              <span>Students</span>
             </button>
           </>
         )}
         {user?.role === 'teacher' && (
           <>
             <button onClick={() => navigate('/skills')} style={getNavBtnStyle('/skills')}>
-              Skill Suggestions
+              <Lightbulb size={18} />
+              <span>Skill Suggestions</span>
             </button>
           </>
         )}
         <button onClick={() => navigate('/communication')} style={getNavBtnStyle('/communication')}>
-          Parent Communication
+          <MessageCircle size={18} />
+          <span>Communication</span>
         </button>
       </nav>
 
@@ -92,12 +111,13 @@ export default function Layout({ children, title }) {
 const styles = {
   container: {
     minHeight: '100vh',
-    background: '#f8f9fa'
+    background: 'var(--bg-primary)'
   },
   header: {
-    background: 'white',
-    borderBottom: '1px solid #e1e4e8',
-    padding: '1rem 2rem'
+    background: 'var(--bg-secondary)',
+    borderBottom: '1px solid var(--border-light)',
+    padding: '1rem 2rem',
+    boxShadow: 'var(--shadow-sm)'
   },
   headerContent: {
     maxWidth: '1200px',
@@ -112,54 +132,73 @@ const styles = {
     gap: '0.75rem'
   },
   logo: {
-    fontSize: '1.5rem'
+    color: 'var(--primary)',
+    display: 'flex',
+    alignItems: 'center'
   },
   schoolName: {
     fontSize: '1.125rem',
     fontWeight: '600',
-    color: '#2c3e50'
+    color: 'var(--text-primary)'
   },
   userInfo: {
     display: 'flex',
     alignItems: 'center',
-    gap: '0.5rem'
+    gap: '1rem'
+  },
+  userDetails: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end'
   },
   userName: {
-    fontWeight: '500'
+    fontWeight: '500',
+    fontSize: '0.9375rem',
+    color: 'var(--text-primary)'
   },
   role: {
-    color: '#6c757d',
-    fontSize: '0.875rem'
+    color: 'var(--text-muted)',
+    fontSize: '0.8125rem',
+    textTransform: 'capitalize'
   },
   logoutBtn: {
-    marginLeft: '1rem',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
     padding: '0.5rem 1rem',
-    background: '#f1f3f5',
-    borderRadius: '4px',
+    background: 'var(--bg-tertiary)',
+    borderRadius: 'var(--radius-md)',
     fontSize: '0.875rem',
-    color: '#495057'
+    color: 'var(--text-secondary)',
+    fontWeight: '500',
+    border: '1px solid var(--border-light)'
   },
   nav: {
-    background: 'white',
-    borderBottom: '1px solid #e1e4e8',
+    background: 'var(--bg-secondary)',
+    borderBottom: '1px solid var(--border-light)',
     padding: '0 2rem',
     display: 'flex',
-    gap: '0.5rem'
+    gap: '0.25rem'
   },
   navBtn: {
-    padding: '0.75rem 1rem',
-    color: '#495057',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
+    padding: '0.875rem 1.25rem',
+    color: 'var(--text-secondary)',
     fontSize: '0.875rem',
-    borderBottom: '2px solid transparent',
+    borderBottom: '3px solid transparent',
     background: 'transparent',
     border: 'none',
     cursor: 'pointer',
-    transition: 'color 0.2s, border-color 0.2s'
+    fontWeight: '500',
+    transition: 'all 0.2s ease'
   },
   navBtnActive: {
-    color: '#4a90e2',
-    borderBottom: '2px solid #4a90e2',
-    fontWeight: '500'
+    color: 'var(--primary)',
+    borderBottom: '3px solid var(--primary)',
+    background: 'var(--primary-light)',
+    fontWeight: '600'
   },
   main: {
     maxWidth: '1200px',
@@ -167,9 +206,10 @@ const styles = {
     padding: '2rem'
   },
   title: {
-    fontSize: '1.75rem',
+    fontSize: '1.875rem',
     fontWeight: '600',
     marginBottom: '1.5rem',
-    color: '#2c3e50'
+    color: 'var(--text-primary)',
+    letterSpacing: '-0.02em'
   }
 }

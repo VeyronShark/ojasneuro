@@ -1,15 +1,22 @@
+import { useNotification } from '../context/NotificationContext'
+import { CheckCircle2, XCircle, Info, X } from 'lucide-react'
+
 /**
  * Notification component - Toast notifications display
  * Requirements: 10.2, 10.3 - Success and error notifications
  */
-import { useNotification } from '../context/NotificationContext';
-
 export default function Notification() {
   const { notifications, removeNotification } = useNotification();
 
   if (notifications.length === 0) {
     return null;
   }
+
+  const icons = {
+    success: <CheckCircle2 size={20} />,
+    error: <XCircle size={20} />,
+    info: <Info size={20} />
+  };
 
   return (
     <div style={styles.container} aria-live="polite">
@@ -29,7 +36,7 @@ export default function Notification() {
             style={styles.closeButton}
             aria-label="Dismiss notification"
           >
-            ×
+            <X size={16} />
           </button>
         </div>
       ))}
@@ -37,27 +44,21 @@ export default function Notification() {
   );
 }
 
-const icons = {
-  success: '✓',
-  error: '✕',
-  info: 'ℹ'
-};
-
 const typeStyles = {
   success: {
-    background: '#d4edda',
-    borderColor: '#c3e6cb',
-    color: '#155724'
+    background: 'var(--success-light)',
+    borderColor: 'var(--success)',
+    color: '#2E7D32'
   },
   error: {
-    background: '#f8d7da',
-    borderColor: '#f5c6cb',
-    color: '#721c24'
+    background: 'var(--error-light)',
+    borderColor: 'var(--error)',
+    color: '#C62828'
   },
   info: {
-    background: '#d1ecf1',
-    borderColor: '#bee5eb',
-    color: '#0c5460'
+    background: 'var(--primary-light)',
+    borderColor: 'var(--primary)',
+    color: 'var(--primary-dark)'
   }
 };
 
@@ -69,56 +70,41 @@ const styles = {
     zIndex: 1000,
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.5rem',
+    gap: '0.75rem',
     maxWidth: '400px'
   },
   notification: {
     display: 'flex',
     alignItems: 'center',
-    padding: '0.75rem 1rem',
-    borderRadius: '4px',
+    padding: '1rem 1.25rem',
+    borderRadius: 'var(--radius-lg)',
     border: '1px solid',
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
-    animation: 'slideIn 0.3s ease-out'
+    boxShadow: 'var(--shadow-md)',
+    animation: 'slideIn 0.3s ease-out',
+    background: 'var(--bg-secondary)'
   },
   icon: {
     marginRight: '0.75rem',
-    fontWeight: 'bold',
-    fontSize: '1rem'
+    display: 'flex',
+    alignItems: 'center',
+    flexShrink: 0
   },
   message: {
     flex: 1,
-    fontSize: '0.875rem'
+    fontSize: '0.875rem',
+    fontWeight: '500',
+    lineHeight: 1.5
   },
   closeButton: {
     marginLeft: '0.75rem',
     background: 'transparent',
     border: 'none',
-    fontSize: '1.25rem',
     cursor: 'pointer',
-    opacity: 0.7,
-    padding: '0 0.25rem',
-    lineHeight: 1
+    opacity: 0.6,
+    padding: '0.25rem',
+    display: 'flex',
+    alignItems: 'center',
+    borderRadius: 'var(--radius-sm)',
+    transition: 'opacity 0.2s ease'
   }
 };
-
-// Inject keyframes for notification animation
-if (typeof document !== 'undefined') {
-  const styleSheet = document.createElement('style');
-  styleSheet.textContent = `
-    @keyframes slideIn {
-      from {
-        transform: translateX(100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateX(0);
-        opacity: 1;
-      }
-    }
-  `;
-  if (!document.querySelector('[data-notification-styles]')) {
-    styleSheet.setAttribute('data-notification-styles', 'true');
-    document.head.appendChild(styleSheet);
-  }
-}

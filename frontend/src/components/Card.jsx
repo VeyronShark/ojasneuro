@@ -9,15 +9,18 @@ export default function Card({ title, children, style }) {
 
 const styles = {
   card: {
-    background: 'white',
-    borderRadius: '8px',
+    background: 'var(--bg-secondary)',
+    borderRadius: 'var(--radius-lg)',
     padding: '1.5rem',
-    border: '1px solid #e1e4e8'
+    border: '1px solid var(--border-light)',
+    boxShadow: 'var(--shadow-sm)',
+    transition: 'box-shadow 0.2s ease'
   },
   title: {
-    fontSize: '1rem',
+    fontSize: '1.0625rem',
     fontWeight: '600',
     marginBottom: '1rem',
-    color: '#2c3e50'
+    color: 'var(--text-primary)',
+    letterSpacing: '-0.01em'
   }
 }

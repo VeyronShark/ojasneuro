@@ -2,229 +2,128 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { authAPI } from '../api/config'
+import { School, Mail, Lock, User, Building2, Copy, Check } from 'lucide-react'
 
 const DUMMY_ACCOUNTS = [
-  { email: "sarah.johnson@sunshine.edu", password: "password123", name: "Sarah Johnson", role: "Admin", school: "Sunshine Montessori" },
-  { email: "maria.garcia@sunshine.edu", password: "password123", name: "Maria Garcia", role: "Teacher", school: "Sunshine Montessori" },
-  { email: "emily.chen@greenvalley.edu", password: "password123", name: "Emily Chen", role: "Admin", school: "Green Valley Montessori" },
-  { email: "david.wilson@littlestars.edu", password: "password123", name: "David Wilson", role: "Teacher", school: "Little Stars Learning" },
-  { email: "lisa.anderson@rainbow.edu", password: "password123", name: "Lisa Anderson", role: "Teacher", school: "Rainbow Bridge Academy" },
-  { email: "michael.brown@brightminds.edu", password: "password123", name: "Michael Brown", role: "Admin", school: "Bright Minds Montessori" },
-  { email: "jennifer.lee@peaceful.edu", password: "password123", name: "Jennifer Lee", role: "Teacher", school: "Peaceful Pathways" },
-  { email: "robert.taylor@discovery.edu", password: "password123", name: "Robert Taylor", role: "Teacher", school: "Discovery Kids Academy" },
-  { email: "amanda.white@harmony.edu", password: "password123", name: "Amanda White", role: "Admin", school: "Harmony House Learning" },
-  { email: "james.martin@wisdom.edu", password: "password123", name: "James Martin", role: "Teacher", school: "Wisdom Tree Montessori" },
+  { email: "admin@sunshine.edu", password: "password123", name: "Sarah Johnson", role: "Admin" },
+  { email: "teacher@sunshine.edu", password: "password123", name: "Maria Garcia", role: "Teacher" },
 ]
 
 function DummyAccounts({ onSelectAccount }) {
-  const [copiedIndex, setCopiedIndex] = useState(null)
-  const [expanded, setExpanded] = useState(false)
-
-  const copyToClipboard = async (text, index) => {
-    try {
-      await navigator.clipboard.writeText(text)
-      setCopiedIndex(index)
-      setTimeout(() => setCopiedIndex(null), 2000)
-    } catch (err) {
-      console.error('Failed to copy:', err)
-    }
-  }
-
-  const displayedAccounts = expanded ? DUMMY_ACCOUNTS : DUMMY_ACCOUNTS.slice(0, 3)
-
   return (
     <div style={demoStyles.container}>
       <div style={demoStyles.header}>
         <p style={demoStyles.title}>🎭 Demo Accounts</p>
-        <p style={demoStyles.subtitle}>Click any account to auto-fill the login form</p>
+        <p style={demoStyles.subtitle}>Click to auto-fill</p>
       </div>
       
       <div style={demoStyles.accountsList}>
-        {displayedAccounts.map((account, index) => (
-          <div key={index} style={demoStyles.accountCard}>
-            <div style={demoStyles.accountInfo}>
-              <div style={demoStyles.accountHeader}>
-                <span style={demoStyles.accountName}>{account.name}</span>
-                <span style={{
-                  ...demoStyles.roleBadge,
-                  ...(account.role === 'Admin' ? demoStyles.adminBadge : demoStyles.teacherBadge)
-                }}>
-                  {account.role === 'Admin' ? '👔' : '👩‍🏫'} {account.role}
-                </span>
-              </div>
-              <div style={demoStyles.accountSchool}>{account.school}</div>
-              <div style={demoStyles.credentials}>
-                <div style={demoStyles.credentialRow}>
-                  <span style={demoStyles.credentialLabel}>Email:</span>
-                  <code style={demoStyles.credentialValue}>{account.email}</code>
-                  <button
-                    onClick={() => copyToClipboard(account.email, `email-${index}`)}
-                    style={demoStyles.copyButton}
-                    title="Copy email"
-                  >
-                    {copiedIndex === `email-${index}` ? '✓' : '📋'}
-                  </button>
-                </div>
-                <div style={demoStyles.credentialRow}>
-                  <span style={demoStyles.credentialLabel}>Pass:</span>
-                  <code style={demoStyles.credentialValue}>{account.password}</code>
-                  <button
-                    onClick={() => copyToClipboard(account.password, `pass-${index}`)}
-                    style={demoStyles.copyButton}
-                    title="Copy password"
-                  >
-                    {copiedIndex === `pass-${index}` ? '✓' : '📋'}
-                  </button>
-                </div>
-              </div>
+        {DUMMY_ACCOUNTS.map((account, index) => (
+          <button
+            key={index}
+            onClick={() => onSelectAccount(account.email, account.password)}
+            style={demoStyles.accountCard}
+          >
+            <div style={demoStyles.accountHeader}>
+              <span style={demoStyles.accountName}>{account.name}</span>
+              <span style={{
+                ...demoStyles.roleBadge,
+                ...(account.role === 'Admin' ? demoStyles.adminBadge : demoStyles.teacherBadge)
+              }}>
+                {account.role}
+              </span>
             </div>
-            <button
-              onClick={() => onSelectAccount(account.email, account.password)}
-              style={demoStyles.useButton}
-            >
-              Use Account
-            </button>
-          </div>
+            <div style={demoStyles.credentials}>
+              <div style={demoStyles.credentialText}>{account.email}</div>
+              <div style={demoStyles.credentialText}>password123</div>
+            </div>
+          </button>
         ))}
       </div>
-
-      {DUMMY_ACCOUNTS.length > 3 && (
-        <button
-          onClick={() => setExpanded(!expanded)}
-          style={demoStyles.expandButton}
-        >
-          {expanded ? '▲ Show Less' : `▼ Show All ${DUMMY_ACCOUNTS.length} Accounts`}
-        </button>
-      )}
     </div>
   )
 }
 
 const demoStyles = {
   container: {
-    marginTop: '1.5rem',
-    padding: '1rem',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    borderRadius: '8px',
-    color: 'white'
+    background: 'var(--bg-secondary)',
+    borderRadius: 'var(--radius-xl)',
+    padding: '2rem',
+    border: '1px solid var(--border-light)',
+    boxShadow: 'var(--shadow-lg)',
+    height: '100%',
+    display: 'flex',
+    flexDirection: 'column'
   },
   header: {
-    marginBottom: '1rem',
+    marginBottom: '1.5rem',
     textAlign: 'center'
   },
   title: {
-    fontSize: '1rem',
+    fontSize: '1.25rem',
     fontWeight: '600',
-    margin: '0 0 0.25rem 0'
+    margin: '0 0 0.5rem 0',
+    color: 'var(--text-primary)'
   },
   subtitle: {
-    fontSize: '0.75rem',
+    fontSize: '0.875rem',
     margin: 0,
-    opacity: 0.9
+    color: 'var(--text-secondary)'
   },
   accountsList: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.75rem'
+    gap: '1rem',
+    flex: 1
   },
   accountCard: {
-    background: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: '6px',
-    padding: '0.75rem',
-    color: '#2c3e50'
-  },
-  accountInfo: {
-    marginBottom: '0.5rem'
+    background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)',
+    borderRadius: 'var(--radius-lg)',
+    padding: '1.5rem',
+    color: 'white',
+    border: 'none',
+    cursor: 'pointer',
+    transition: 'all 0.2s ease',
+    textAlign: 'left',
+    width: '100%',
+    boxShadow: 'var(--shadow-md)'
   },
   accountHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '0.25rem'
+    marginBottom: '1rem'
   },
   accountName: {
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    color: '#2c3e50'
+    fontSize: '1.125rem',
+    fontWeight: '600'
   },
   roleBadge: {
-    fontSize: '0.7rem',
-    padding: '0.15rem 0.5rem',
-    borderRadius: '12px',
-    fontWeight: '500'
+    fontSize: '0.75rem',
+    padding: '0.375rem 0.75rem',
+    borderRadius: 'var(--radius-lg)',
+    fontWeight: '600'
   },
   adminBadge: {
-    background: '#e3f2fd',
-    color: '#1976d2'
+    background: 'rgba(255, 255, 255, 0.25)',
+    color: 'white'
   },
   teacherBadge: {
-    background: '#f3e5f5',
-    color: '#7b1fa2'
-  },
-  accountSchool: {
-    fontSize: '0.7rem',
-    color: '#6c757d',
-    marginBottom: '0.5rem'
+    background: 'rgba(255, 255, 255, 0.25)',
+    color: 'white'
   },
   credentials: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '0.25rem'
+    gap: '0.5rem'
   },
-  credentialRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-    fontSize: '0.75rem'
-  },
-  credentialLabel: {
-    fontWeight: '500',
-    color: '#6c757d',
-    minWidth: '35px'
-  },
-  credentialValue: {
-    flex: 1,
-    background: '#f8f9fa',
-    padding: '0.25rem 0.5rem',
-    borderRadius: '3px',
-    fontSize: '0.7rem',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap'
-  },
-  copyButton: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
+  credentialText: {
     fontSize: '0.875rem',
-    padding: '0.25rem',
-    opacity: 0.7,
-    transition: 'opacity 0.2s'
-  },
-  useButton: {
-    width: '100%',
-    padding: '0.5rem',
-    background: '#4a90e2',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '0.8rem',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'background 0.2s'
-  },
-  expandButton: {
-    width: '100%',
-    marginTop: '0.75rem',
-    padding: '0.5rem',
-    background: 'rgba(255, 255, 255, 0.2)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    fontSize: '0.8rem',
-    fontWeight: '500',
-    cursor: 'pointer',
-    transition: 'background 0.2s'
+    fontFamily: 'monospace',
+    opacity: 0.95,
+    background: 'rgba(255, 255, 255, 0.15)',
+    padding: '0.5rem 0.75rem',
+    borderRadius: 'var(--radius-sm)'
   }
 }
 
@@ -332,158 +231,166 @@ export default function Login() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.card}>
-        <div style={styles.header}>
-          <span style={styles.logo}>🏫</span>
-          <h1 style={styles.title}>{isSignup ? 'Create Account' : 'Welcome Back'}</h1>
-        </div>
-
-        <div style={styles.tabs}>
-          <button
-            style={{ ...styles.tab, ...(isSignup ? {} : styles.tabActive) }}
-            onClick={() => !loading && setIsSignup(false)}
-          >
-            Login
-          </button>
-          <button
-            style={{ ...styles.tab, ...(isSignup ? styles.tabActive : {}) }}
-            onClick={() => !loading && setIsSignup(true)}
-          >
-            Sign Up
-          </button>
-        </div>
-
-        <form onSubmit={isSignup ? handleSignup : handleLogin} style={styles.form}>
-          {isSignup && (
-            <div style={styles.field}>
-              <label style={styles.label}>Full Name</label>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                style={styles.input}
-                placeholder="Enter your full name"
-                required
-              />
+      <div style={styles.contentWrapper}>
+        {!isSignup && (
+          <div style={styles.demoPanel}>
+            <DummyAccounts onSelectAccount={(email, password) => {
+              setEmail(email)
+              setPassword(password)
+            }} />
+          </div>
+        )}
+        
+        <div style={styles.card}>
+          <div style={styles.header}>
+            <div style={styles.logo}>
+              <School size={48} />
             </div>
-          )}
-
-          <div style={styles.field}>
-            <label style={styles.label}>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={styles.input}
-              placeholder="Enter your email"
-              required
-            />
+            <h1 style={styles.title}>{isSignup ? 'Create Account' : 'Welcome Back'}</h1>
           </div>
 
-          <div style={styles.field}>
-            <label style={styles.label}>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              style={styles.input}
-              placeholder={isSignup ? 'At least 6 characters' : 'Enter your password'}
-              required
-            />
+          <div style={styles.tabs}>
+            <button
+              style={{ ...styles.tab, ...(isSignup ? {} : styles.tabActive) }}
+              onClick={() => !loading && setIsSignup(false)}
+            >
+              Login
+            </button>
+            <button
+              style={{ ...styles.tab, ...(isSignup ? styles.tabActive : {}) }}
+              onClick={() => !loading && setIsSignup(true)}
+            >
+              Sign Up
+            </button>
           </div>
 
-          {isSignup && (
-            <>
+          <form onSubmit={isSignup ? handleSignup : handleLogin} style={styles.form}>
+            {isSignup && (
               <div style={styles.field}>
-                <label style={styles.label}>Confirm Password</label>
+                <label style={styles.label}>Full Name</label>
                 <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   style={styles.input}
-                  placeholder="Confirm your password"
+                  placeholder="Enter your full name"
                   required
                 />
               </div>
+            )}
 
-              <div style={styles.field}>
-                <label style={styles.label}>I am a...</label>
-                <div style={styles.roleButtons}>
-                  <button
-                    type="button"
-                    style={{ ...styles.roleButton, ...(role === 'teacher' ? styles.roleButtonActive : {}) }}
-                    onClick={() => setRole('teacher')}
-                  >
-                    👩‍🏫 Teacher
-                  </button>
-                  <button
-                    type="button"
-                    style={{ ...styles.roleButton, ...(role === 'admin' ? styles.roleButtonActive : {}) }}
-                    onClick={() => setRole('admin')}
-                  >
-                    👔 Admin
-                  </button>
-                </div>
-              </div>
+            <div style={styles.field}>
+              <label style={styles.label}>Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={styles.input}
+                placeholder="Enter your email"
+                required
+              />
+            </div>
 
-              {role === 'teacher' && (
+            <div style={styles.field}>
+              <label style={styles.label}>Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={styles.input}
+                placeholder={isSignup ? 'At least 6 characters' : 'Enter your password'}
+                required
+              />
+            </div>
+
+            {isSignup && (
+              <>
                 <div style={styles.field}>
-                  <label style={styles.label}>Select Your School</label>
-                  {schools.length > 0 ? (
-                    <select
-                      value={schoolId}
-                      onChange={(e) => setSchoolId(e.target.value)}
-                      style={styles.input}
-                      required
-                    >
-                      <option value="">-- Select a school --</option>
-                      {schools.map(school => (
-                        <option key={school.id} value={school.id}>{school.name}</option>
-                      ))}
-                    </select>
-                  ) : (
-                    <p style={styles.hint}>No schools yet. Sign up as admin to create one.</p>
-                  )}
-                </div>
-              )}
-
-              {role === 'admin' && (
-                <div style={styles.field}>
-                  <label style={styles.label}>School Name</label>
+                  <label style={styles.label}>Confirm Password</label>
                   <input
-                    type="text"
-                    value={schoolName}
-                    onChange={(e) => setSchoolName(e.target.value)}
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
                     style={styles.input}
-                    placeholder="Enter your school name"
+                    placeholder="Confirm your password"
                     required
                   />
-                  <p style={styles.hint}>This creates a new school with you as admin.</p>
                 </div>
-              )}
-            </>
-          )}
 
-          {error && <div style={styles.error}>{error}</div>}
+                <div style={styles.field}>
+                  <label style={styles.label}>I am a...</label>
+                  <div style={styles.roleButtons}>
+                    <button
+                      type="button"
+                      style={{ ...styles.roleButton, ...(role === 'teacher' ? styles.roleButtonActive : {}) }}
+                      onClick={() => setRole('teacher')}
+                    >
+                      Teacher
+                    </button>
+                    <button
+                      type="button"
+                      style={{ ...styles.roleButton, ...(role === 'admin' ? styles.roleButtonActive : {}) }}
+                      onClick={() => setRole('admin')}
+                    >
+                      Admin
+                    </button>
+                  </div>
+                </div>
 
-          <button type="submit" style={styles.button} disabled={loading}>
-            {loading ? (isSignup ? 'Creating...' : 'Logging in...') : (isSignup ? 'Sign Up' : 'Login')}
-          </button>
-        </form>
+                {role === 'teacher' && (
+                  <div style={styles.field}>
+                    <label style={styles.label}>Select Your School</label>
+                    {schools.length > 0 ? (
+                      <select
+                        value={schoolId}
+                        onChange={(e) => setSchoolId(e.target.value)}
+                        style={styles.input}
+                        required
+                      >
+                        <option value="">-- Select a school --</option>
+                        {schools.map(school => (
+                          <option key={school.id} value={school.id}>{school.name}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <p style={styles.hint}>No schools yet. Sign up as admin to create one.</p>
+                    )}
+                  </div>
+                )}
 
-        <div style={styles.toggle}>
-          <span style={styles.toggleText}>
-            {isSignup ? 'Already have an account? ' : "Don't have an account? "}
-          </span>
-          <button style={styles.toggleLink} onClick={toggleMode} disabled={loading}>
-            {isSignup ? 'Login' : 'Sign Up'}
-          </button>
+                {role === 'admin' && (
+                  <div style={styles.field}>
+                    <label style={styles.label}>School Name</label>
+                    <input
+                      type="text"
+                      value={schoolName}
+                      onChange={(e) => setSchoolName(e.target.value)}
+                      style={styles.input}
+                      placeholder="Enter your school name"
+                      required
+                    />
+                    <p style={styles.hint}>This creates a new school with you as admin.</p>
+                  </div>
+                )}
+              </>
+            )}
+
+            {error && <div style={styles.error}>{error}</div>}
+
+            <button type="submit" style={styles.button} disabled={loading}>
+              {loading ? (isSignup ? 'Creating...' : 'Logging in...') : (isSignup ? 'Sign Up' : 'Login')}
+            </button>
+          </form>
+
+          <div style={styles.toggle}>
+            <span style={styles.toggleText}>
+              {isSignup ? 'Already have an account? ' : "Don't have an account? "}
+            </span>
+            <button style={styles.toggleLink} onClick={toggleMode} disabled={loading}>
+              {isSignup ? 'Login' : 'Sign Up'}
+            </button>
+          </div>
         </div>
-
-        {!isSignup && <DummyAccounts onSelectAccount={(email, password) => {
-          setEmail(email)
-          setPassword(password)
-        }} />}
       </div>
     </div>
   )
@@ -496,58 +403,72 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: '#f8f9fa',
-    padding: '1rem'
+    background: 'linear-gradient(135deg, var(--primary-light) 0%, var(--bg-primary) 100%)',
+    padding: '2rem'
+  },
+  contentWrapper: {
+    display: 'flex',
+    gap: '2rem',
+    alignItems: 'stretch',
+    maxWidth: '900px',
+    width: '100%'
+  },
+  demoPanel: {
+    flex: '0 0 320px',
+    display: 'flex'
   },
   card: {
-    background: 'white',
-    borderRadius: '8px',
-    padding: '2rem',
-    width: '100%',
-    maxWidth: '420px',
-    border: '1px solid #e1e4e8'
+    background: 'var(--bg-secondary)',
+    borderRadius: 'var(--radius-xl)',
+    padding: '2.5rem',
+    flex: 1,
+    border: '1px solid var(--border-light)',
+    boxShadow: 'var(--shadow-lg)'
   },
   header: {
     textAlign: 'center',
-    marginBottom: '1.5rem'
+    marginBottom: '2rem'
   },
   logo: {
-    fontSize: '2.5rem',
-    display: 'block',
-    marginBottom: '0.5rem'
+    color: 'var(--primary)',
+    display: 'flex',
+    justifyContent: 'center',
+    marginBottom: '1rem'
   },
   title: {
-    fontSize: '1.5rem',
+    fontSize: '1.75rem',
     fontWeight: '600',
-    color: '#2c3e50',
-    margin: 0
+    color: 'var(--text-primary)',
+    margin: 0,
+    letterSpacing: '-0.02em'
   },
   tabs: {
     display: 'flex',
-    marginBottom: '1.5rem',
-    borderRadius: '6px',
+    marginBottom: '2rem',
+    borderRadius: 'var(--radius-lg)',
     overflow: 'hidden',
-    border: '1px solid #e1e4e8'
+    border: '1px solid var(--border-light)',
+    background: 'var(--bg-tertiary)'
   },
   tab: {
     flex: 1,
-    padding: '0.75rem',
+    padding: '0.875rem',
     border: 'none',
-    background: '#f8f9fa',
+    background: 'transparent',
     cursor: 'pointer',
-    fontSize: '0.875rem',
+    fontSize: '0.9375rem',
     fontWeight: '500',
-    color: '#6c757d',
-    transition: 'all 0.2s'
+    color: 'var(--text-secondary)',
+    transition: 'all 0.2s ease'
   },
   tabActive: {
-    background: '#4a90e2',
+    background: 'var(--primary)',
     color: 'white'
   },
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '1rem'
+    gap: '1.25rem'
   },
   field: {
     display: 'flex',
@@ -557,88 +478,94 @@ const styles = {
   label: {
     fontSize: '0.875rem',
     fontWeight: '500',
-    color: '#495057'
+    color: 'var(--text-primary)'
   },
   input: {
-    padding: '0.75rem',
-    border: '1px solid #ced4da',
-    borderRadius: '4px',
-    fontSize: '1rem'
+    padding: '0.875rem',
+    border: '1px solid var(--border)',
+    borderRadius: 'var(--radius-md)',
+    fontSize: '1rem',
+    transition: 'all 0.2s ease'
   },
   roleButtons: {
     display: 'flex',
-    gap: '0.5rem'
+    gap: '0.75rem'
   },
   roleButton: {
     flex: 1,
-    padding: '0.75rem',
-    border: '1px solid #ced4da',
-    borderRadius: '4px',
-    background: 'white',
+    padding: '0.875rem',
+    border: '1px solid var(--border)',
+    borderRadius: 'var(--radius-md)',
+    background: 'var(--bg-secondary)',
     cursor: 'pointer',
     fontSize: '0.875rem',
-    transition: 'all 0.2s'
+    fontWeight: '500',
+    transition: 'all 0.2s ease',
+    color: 'var(--text-secondary)'
   },
   roleButtonActive: {
-    background: '#4a90e2',
+    background: 'var(--primary)',
     color: 'white',
-    borderColor: '#4a90e2'
+    borderColor: 'var(--primary)'
   },
   button: {
-    padding: '0.75rem',
-    background: '#4a90e2',
+    padding: '0.875rem',
+    background: 'var(--primary)',
     color: 'white',
     border: 'none',
-    borderRadius: '4px',
+    borderRadius: 'var(--radius-md)',
     fontSize: '1rem',
     fontWeight: '500',
     cursor: 'pointer',
-    marginTop: '0.5rem'
+    marginTop: '0.5rem',
+    boxShadow: 'var(--shadow-sm)',
+    transition: 'all 0.2s ease'
   },
   error: {
-    color: '#dc3545',
+    color: '#C62828',
     fontSize: '0.875rem',
-    padding: '0.5rem',
-    background: '#f8d7da',
-    borderRadius: '4px'
+    padding: '0.75rem',
+    background: 'var(--error-light)',
+    borderRadius: 'var(--radius-md)',
+    border: '1px solid var(--error)'
   },
   hint: {
-    fontSize: '0.75rem',
-    color: '#6c757d',
+    fontSize: '0.8125rem',
+    color: 'var(--text-muted)',
     margin: '0.25rem 0 0 0'
   },
   toggle: {
-    marginTop: '1.5rem',
+    marginTop: '2rem',
     textAlign: 'center'
   },
   toggleText: {
     fontSize: '0.875rem',
-    color: '#6c757d'
+    color: 'var(--text-secondary)'
   },
   toggleLink: {
     background: 'none',
     border: 'none',
-    color: '#4a90e2',
+    color: 'var(--primary)',
     cursor: 'pointer',
     fontSize: '0.875rem',
-    fontWeight: '500',
+    fontWeight: '600',
     padding: 0
   },
   demo: {
     marginTop: '1.5rem',
     padding: '1rem',
-    background: '#f8f9fa',
-    borderRadius: '4px'
+    background: 'var(--bg-tertiary)',
+    borderRadius: 'var(--radius-md)'
   },
   demoTitle: {
     fontSize: '0.875rem',
     fontWeight: '600',
     marginBottom: '0.5rem',
-    color: '#495057'
+    color: 'var(--text-primary)'
   },
   demoText: {
-    fontSize: '0.75rem',
-    color: '#6c757d',
+    fontSize: '0.8125rem',
+    color: 'var(--text-secondary)',
     margin: '0.25rem 0'
   }
 }

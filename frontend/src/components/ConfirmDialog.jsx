@@ -1,9 +1,10 @@
+import Modal from './Modal'
+import { AlertTriangle } from 'lucide-react'
+
 /**
  * ConfirmDialog component - Confirmation dialog for delete operations
  * Requirements: 4.3 - Confirm deletion before sending DELETE request
  */
-import Modal from './Modal';
-
 export default function ConfirmDialog({
   isOpen,
   onClose,
@@ -46,7 +47,9 @@ export default function ConfirmDialog({
     >
       <div style={styles.content}>
         {variant === 'danger' && (
-          <div style={styles.warningIcon}>⚠️</div>
+          <div style={styles.warningIcon}>
+            <AlertTriangle size={48} color="var(--error)" />
+          </div>
         )}
         <p style={styles.message}>{message}</p>
       </div>
@@ -56,38 +59,41 @@ export default function ConfirmDialog({
 
 const styles = {
   content: {
-    textAlign: 'center'
+    textAlign: 'center',
+    padding: '1rem 0'
   },
   warningIcon: {
-    fontSize: '3rem',
+    display: 'flex',
+    justifyContent: 'center',
     marginBottom: '1rem'
   },
   message: {
-    color: '#495057',
+    color: 'var(--text-secondary)',
     fontSize: '1rem',
     margin: 0,
-    lineHeight: 1.5
+    lineHeight: 1.6
   },
   button: {
-    padding: '0.5rem 1rem',
-    borderRadius: '4px',
+    padding: '0.625rem 1.25rem',
+    borderRadius: 'var(--radius-md)',
     fontSize: '0.875rem',
     fontWeight: '500',
     cursor: 'pointer',
     border: 'none',
-    transition: 'background-color 0.2s'
+    transition: 'all 0.2s ease'
   },
   cancelButton: {
-    background: '#f1f3f5',
-    color: '#495057'
+    background: 'var(--bg-tertiary)',
+    color: 'var(--text-secondary)',
+    border: '1px solid var(--border)'
   },
   confirmButton: {
     color: 'white'
   },
   dangerButton: {
-    background: '#dc3545'
+    background: 'var(--error)'
   },
   primaryButton: {
-    background: '#3498db'
+    background: 'var(--primary)'
   }
 };

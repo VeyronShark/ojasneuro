@@ -13,6 +13,8 @@ import Modal from '../components/Modal'
 import ConfirmDialog from '../components/ConfirmDialog'
 import EmptyState from '../components/EmptyState'
 import { useClasses } from '../hooks/useClasses'
+import { Plus, Edit2, Trash2, ArrowLeft, BookOpen } from 'lucide-react'
+import { buttonStyles, formStyles, tableStyles, badgeStyles } from '../styles/commonStyles'
 
 export default function ManageClasses() {
   const navigate = useNavigate()
@@ -168,16 +170,18 @@ export default function ManageClasses() {
     <Layout title="Manage Classes">
       {/* Back Navigation */}
       <div style={styles.backNav}>
-        <button onClick={handleBackClick} style={styles.backButton}>
-          ← Back to Dashboard
+        <button onClick={handleBackClick} style={buttonStyles.secondary}>
+          <ArrowLeft size={18} />
+          <span>Back to Dashboard</span>
         </button>
       </div>
 
       {/* Classes Table */}
       <Card title={`All Classrooms (${classes.length})`}>
         <div style={styles.cardHeader}>
-          <button onClick={() => setShowAddModal(true)} style={styles.addButton}>
-            + Add Classroom
+          <button onClick={() => setShowAddModal(true)} style={buttonStyles.primary}>
+            <Plus size={18} />
+            <span>Add Classroom</span>
           </button>
         </div>
 
@@ -209,8 +213,8 @@ export default function ManageClasses() {
                 >
                   <td style={styles.td}>
                     <div style={styles.classNameCell}>
-                      <span style={styles.classIcon}>📚</span>
-                      {cls.name}
+                      <BookOpen size={20} color="var(--primary)" />
+                      <span>{cls.name}</span>
                     </div>
                   </td>
                   <td style={styles.td}>
@@ -230,17 +234,17 @@ export default function ManageClasses() {
                     <div style={styles.actions}>
                       <button
                         onClick={(e) => openEditModal(cls, e)}
-                        style={styles.actionBtn}
+                        style={buttonStyles.ghost}
                         title="Edit classroom"
                       >
-                        ✏️
+                        <Edit2 size={16} />
                       </button>
                       <button
                         onClick={(e) => openDeleteDialog(cls, e)}
-                        style={styles.actionBtn}
+                        style={buttonStyles.ghost}
                         title="Delete classroom"
                       >
-                        🗑️
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </td>
@@ -368,138 +372,46 @@ const styles = {
   backNav: {
     marginBottom: '1.5rem'
   },
-  backButton: {
-    padding: '0.5rem 1rem',
-    background: '#f1f3f5',
-    border: '1px solid #e1e4e8',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '0.875rem',
-    color: '#495057',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem'
-  },
   cardHeader: {
     display: 'flex',
     justifyContent: 'flex-end',
-    marginBottom: '1rem'
+    marginBottom: '1.5rem'
   },
-  addButton: {
-    padding: '0.5rem 1rem',
-    background: '#4a90e2',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '0.875rem',
-    fontWeight: '500'
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse'
-  },
-  th: {
-    textAlign: 'left',
-    padding: '0.75rem',
-    borderBottom: '2px solid #e1e4e8',
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    color: '#495057'
-  },
-  row: {
-    cursor: 'pointer',
-    borderBottom: '1px solid #f1f3f5',
-    transition: 'background 0.2s'
-  },
-  td: {
-    padding: '1rem 0.75rem',
-    fontSize: '0.875rem'
-  },
+  table: tableStyles.table,
+  th: tableStyles.th,
+  row: tableStyles.row,
+  td: tableStyles.td,
   classNameCell: {
     display: 'flex',
     alignItems: 'center',
-    gap: '0.75rem'
-  },
-  classIcon: {
-    fontSize: '1.25rem'
+    gap: '0.75rem',
+    fontWeight: '500'
   },
   gradeBadge: {
-    padding: '0.25rem 0.75rem',
-    background: '#e7f3ff',
-    color: '#4a90e2',
-    borderRadius: '12px',
-    fontSize: '0.75rem',
-    fontWeight: '500'
+    ...badgeStyles.default,
+    ...badgeStyles.primary
   },
   studentCount: {
     fontWeight: '600',
-    color: '#4a90e2'
+    color: 'var(--primary)'
   },
   actions: {
     display: 'flex',
     gap: '0.5rem'
   },
-  actionBtn: {
-    padding: '0.25rem 0.5rem',
-    background: 'transparent',
-    border: '1px solid #e1e4e8',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '0.875rem'
-  },
-  emptyState: {
-    textAlign: 'center',
-    padding: '2rem',
-    color: '#6c757d'
-  },
   errorContainer: {
     textAlign: 'center',
-    padding: '2rem'
+    padding: '3rem 2rem'
   },
   errorText: {
-    color: '#dc3545',
-    marginBottom: '1rem'
+    color: 'var(--error)',
+    marginBottom: '1rem',
+    fontSize: '1rem'
   },
-  retryButton: {
-    padding: '0.5rem 1rem',
-    background: '#4a90e2',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer'
-  },
-  formGroup: {
-    marginBottom: '1rem'
-  },
-  label: {
-    display: 'block',
-    marginBottom: '0.5rem',
-    fontWeight: '500',
-    color: '#2c3e50'
-  },
-  input: {
-    width: '100%',
-    padding: '0.75rem',
-    border: '1px solid #e1e4e8',
-    borderRadius: '4px',
-    fontSize: '1rem',
-    boxSizing: 'border-box'
-  },
-  cancelButton: {
-    padding: '0.5rem 1rem',
-    background: '#f8f9fa',
-    color: '#6c757d',
-    border: '1px solid #e1e4e8',
-    borderRadius: '4px',
-    cursor: 'pointer'
-  },
-  submitButton: {
-    padding: '0.5rem 1rem',
-    background: '#4a90e2',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer'
-  }
+  retryButton: buttonStyles.primary,
+  formGroup: formStyles.formGroup,
+  label: formStyles.label,
+  input: formStyles.input,
+  cancelButton: buttonStyles.secondary,
+  submitButton: buttonStyles.primary
 }

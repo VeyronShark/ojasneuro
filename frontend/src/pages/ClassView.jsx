@@ -9,6 +9,8 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import EmptyState from '../components/EmptyState'
 import { useStudents } from '../hooks/useStudents'
 import { classesAPI, analyticsAPI } from '../api/config'
+import { Plus, Edit2, Trash2, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { buttonStyles, formStyles, tableStyles } from '../styles/commonStyles'
 
 export default function ClassView() {
   const { classId } = useParams()
@@ -111,9 +113,9 @@ export default function ClassView() {
   }
 
   const getTrendIcon = (trend) => {
-    if (trend === 'up') return '↗️'
-    if (trend === 'down') return '↘️'
-    return '→'
+    if (trend === 'up') return <TrendingUp size={18} color="var(--success)" />
+    if (trend === 'down') return <TrendingDown size={18} color="var(--error)" />
+    return <Minus size={18} color="var(--text-muted)" />
   }
   
   // Handle adding a new student
@@ -266,9 +268,10 @@ export default function ClassView() {
         
         <button
           onClick={() => setShowAddModal(true)}
-          style={styles.addButton}
+          style={buttonStyles.success}
         >
-          + Add Student
+          <Plus size={18} />
+          <span>Add Student</span>
         </button>
       </div>
 
@@ -357,17 +360,17 @@ export default function ClassView() {
                       <div style={styles.actions}>
                         <button
                           onClick={(e) => openEditModal(student, e)}
-                          style={styles.actionBtn}
+                          style={buttonStyles.ghost}
                           title="Edit student"
                         >
-                          ✏️
+                          <Edit2 size={16} />
                         </button>
                         <button
                           onClick={(e) => openDeleteDialog(student, e)}
-                          style={styles.actionBtn}
+                          style={buttonStyles.ghost}
                           title="Delete student"
                         >
-                          🗑️
+                          <Trash2 size={16} />
                         </button>
                       </div>
                     </td>
@@ -499,150 +502,80 @@ const styles = {
   metricsGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(3, 1fr)',
-    gap: '1rem',
-    marginBottom: '1.5rem'
+    gap: '1.25rem',
+    marginBottom: '2rem'
   },
   metricValue: {
     fontSize: '2rem',
     fontWeight: '600',
-    color: '#4a90e2'
+    color: 'var(--primary)'
   },
   filters: {
     display: 'flex',
-    gap: '0.5rem',
+    gap: '0.75rem',
     marginBottom: '1.5rem',
     flexWrap: 'wrap',
     alignItems: 'center'
   },
   filterBtn: {
-    padding: '0.5rem 1rem',
-    background: 'white',
-    border: '1px solid #e1e4e8',
-    borderRadius: '4px',
+    padding: '0.625rem 1.25rem',
+    background: 'var(--bg-secondary)',
+    border: '1px solid var(--border)',
+    borderRadius: 'var(--radius-md)',
     fontSize: '0.875rem',
-    color: '#495057',
-    cursor: 'pointer'
+    color: 'var(--text-secondary)',
+    cursor: 'pointer',
+    fontWeight: '500',
+    transition: 'all 0.2s ease'
   },
   filterActive: {
-    padding: '0.5rem 1rem',
-    background: '#4a90e2',
-    border: '1px solid #4a90e2',
-    borderRadius: '4px',
+    padding: '0.625rem 1.25rem',
+    background: 'var(--primary)',
+    border: '1px solid var(--primary)',
+    borderRadius: 'var(--radius-md)',
     fontSize: '0.875rem',
     color: 'white',
-    cursor: 'pointer'
-  },
-  addButton: {
-    padding: '0.5rem 1rem',
-    background: '#28a745',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
     cursor: 'pointer',
-    fontSize: '0.875rem',
     fontWeight: '500',
-    marginLeft: 'auto'
+    boxShadow: 'var(--shadow-sm)'
   },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse'
-  },
-  th: {
-    textAlign: 'left',
-    padding: '0.75rem',
-    borderBottom: '2px solid #e1e4e8',
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    color: '#495057'
-  },
-  row: {
-    cursor: 'pointer',
-    borderBottom: '1px solid #f1f3f5'
-  },
-  td: {
-    padding: '1rem 0.75rem',
-    fontSize: '0.875rem'
-  },
+  table: tableStyles.table,
+  th: tableStyles.th,
+  row: tableStyles.row,
+  td: tableStyles.td,
   badge: {
-    padding: '0.25rem 0.75rem',
-    borderRadius: '12px',
+    padding: '0.375rem 0.875rem',
+    borderRadius: 'var(--radius-lg)',
     fontSize: '0.75rem',
     fontWeight: '500',
     textTransform: 'capitalize'
   },
   heatmap: {
     display: 'flex',
-    gap: '2px'
+    gap: '3px'
   },
   heatCell: {
-    width: '20px',
-    height: '20px',
-    borderRadius: '2px'
+    width: '22px',
+    height: '22px',
+    borderRadius: 'var(--radius-sm)'
   },
   actions: {
     display: 'flex',
     gap: '0.5rem'
   },
-  actionBtn: {
-    padding: '0.25rem 0.5rem',
-    background: 'transparent',
-    border: '1px solid #e1e4e8',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '0.875rem'
-  },
-  emptyState: {
-    textAlign: 'center',
-    padding: '2rem',
-    color: '#6c757d'
-  },
   errorContainer: {
     textAlign: 'center',
-    padding: '2rem'
+    padding: '3rem 2rem'
   },
   errorText: {
-    color: '#dc3545',
-    marginBottom: '1rem'
+    color: 'var(--error)',
+    marginBottom: '1rem',
+    fontSize: '1rem'
   },
-  retryButton: {
-    padding: '0.5rem 1rem',
-    background: '#4a90e2',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer'
-  },
-  formGroup: {
-    marginBottom: '1rem'
-  },
-  label: {
-    display: 'block',
-    marginBottom: '0.5rem',
-    fontWeight: '500',
-    color: '#2c3e50'
-  },
-  input: {
-    width: '100%',
-    padding: '0.75rem',
-    border: '1px solid #e1e4e8',
-    borderRadius: '4px',
-    fontSize: '1rem',
-    boxSizing: 'border-box'
-  },
-  cancelButton: {
-    padding: '0.5rem 1rem',
-    background: '#f8f9fa',
-    color: '#6c757d',
-    border: '1px solid #e1e4e8',
-    borderRadius: '4px',
-    cursor: 'pointer'
-  },
-  submitButton: {
-    padding: '0.5rem 1rem',
-    background: '#4a90e2',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer'
-  }
+  retryButton: buttonStyles.primary,
+  formGroup: formStyles.formGroup,
+  label: formStyles.label,
+  input: formStyles.input,
+  cancelButton: buttonStyles.secondary,
+  submitButton: buttonStyles.primary
 }

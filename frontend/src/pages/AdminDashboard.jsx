@@ -14,6 +14,8 @@ import ConfirmDialog from '../components/ConfirmDialog'
 import EmptyState from '../components/EmptyState'
 import { useClasses } from '../hooks/useClasses'
 import { schoolsAPI, teachersAPI, analyticsAPI, classesAPI } from '../api/config'
+import { Plus, Edit2, Trash2, Search, X } from 'lucide-react'
+import { buttonStyles, formStyles, tableStyles, badgeStyles } from '../styles/commonStyles'
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
@@ -385,8 +387,9 @@ export default function AdminDashboard() {
     return (
       <Card title="All Classrooms">
         <div style={styles.cardHeader}>
-          <button onClick={() => setShowAddClassModal(true)} style={styles.addButton}>
-            + Add Classroom
+          <button onClick={() => setShowAddClassModal(true)} style={buttonStyles.primary}>
+            <Plus size={18} />
+            <span>Add Classroom</span>
           </button>
         </div>
         
@@ -424,17 +427,17 @@ export default function AdminDashboard() {
                     <div style={styles.actions}>
                       <button
                         onClick={(e) => openEditClassModal(cls, e)}
-                        style={styles.actionBtn}
+                        style={buttonStyles.ghost}
                         title="Edit classroom"
                       >
-                        ✏️
+                        <Edit2 size={16} />
                       </button>
                       <button
                         onClick={(e) => openDeleteClassDialog(cls, e)}
-                        style={styles.actionBtn}
+                        style={buttonStyles.ghost}
                         title="Delete classroom"
                       >
-                        🗑️
+                        <Trash2 size={16} />
                       </button>
                     </div>
                   </td>
@@ -468,6 +471,7 @@ export default function AdminDashboard() {
       <Card title="All Students">
         <div style={styles.cardHeader}>
           <div style={styles.searchContainer}>
+            <Search size={18} style={styles.searchIcon} />
             <input
               type="text"
               value={studentSearch}
@@ -481,7 +485,7 @@ export default function AdminDashboard() {
                 style={styles.clearSearchBtn}
                 title="Clear search"
               >
-                ×
+                <X size={18} />
               </button>
             )}
           </div>
@@ -695,30 +699,31 @@ const styles = {
   tabs: {
     display: 'flex',
     gap: '0.5rem',
-    marginBottom: '1.5rem',
-    borderBottom: '1px solid #e1e4e8',
-    paddingBottom: '0.5rem'
+    marginBottom: '2rem',
+    borderBottom: '2px solid var(--border-light)',
+    paddingBottom: '0'
   },
   tab: {
-    padding: '0.75rem 1.5rem',
+    padding: '0.875rem 1.5rem',
     background: 'transparent',
     border: 'none',
-    borderRadius: '4px 4px 0 0',
+    borderBottom: '3px solid transparent',
     fontSize: '0.9375rem',
-    color: '#6c757d',
+    color: 'var(--text-secondary)',
     cursor: 'pointer',
     fontWeight: '500',
-    transition: 'all 0.2s'
+    transition: 'all 0.2s ease'
   },
   tabActive: {
-    padding: '0.75rem 1.5rem',
-    background: '#4a90e2',
+    padding: '0.875rem 1.5rem',
+    background: 'var(--primary-light)',
     border: 'none',
-    borderRadius: '4px 4px 0 0',
+    borderBottom: '3px solid var(--primary)',
+    borderRadius: 'var(--radius-md) var(--radius-md) 0 0',
     fontSize: '0.9375rem',
-    color: 'white',
+    color: 'var(--primary-dark)',
     cursor: 'pointer',
-    fontWeight: '500'
+    fontWeight: '600'
   },
   tabContent: {
     minHeight: '400px'
@@ -741,21 +746,22 @@ const styles = {
   summaryValue: {
     fontSize: '2rem',
     fontWeight: '600',
-    color: '#4a90e2'
+    color: 'var(--primary)'
   },
   summaryLabel: {
     fontSize: '0.875rem',
-    color: '#6c757d'
+    color: 'var(--text-secondary)'
   },
   statValue: {
     fontSize: '2.5rem',
     fontWeight: '600',
-    color: '#4a90e2',
+    color: 'var(--primary)',
     marginBottom: '0.5rem'
   },
   statLabel: {
     fontSize: '0.875rem',
-    color: '#6c757d'
+    color: 'var(--text-muted)',
+    lineHeight: 1.5
   },
   skillList: {
     display: 'flex',
@@ -795,16 +801,16 @@ const styles = {
   },
   bar: {
     width: '60px',
-    background: '#4a90e2',
-    borderRadius: '4px 4px 0 0'
+    background: 'var(--primary)',
+    borderRadius: 'var(--radius-sm) var(--radius-sm) 0 0'
   },
   chartLabel: {
     fontSize: '0.75rem',
-    color: '#6c757d'
+    color: 'var(--text-muted)'
   },
   chartNote: {
     fontSize: '0.75rem',
-    color: '#6c757d',
+    color: 'var(--text-muted)',
     textAlign: 'center',
     marginTop: '1rem'
   },
@@ -816,91 +822,61 @@ const styles = {
     flexWrap: 'wrap',
     gap: '1rem'
   },
-  addButton: {
-    padding: '0.5rem 1rem',
-    background: '#4a90e2',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '0.875rem',
-    fontWeight: '500'
-  },
   searchContainer: {
     position: 'relative',
     display: 'flex',
     alignItems: 'center'
   },
+  searchIcon: {
+    position: 'absolute',
+    left: '12px',
+    color: 'var(--text-muted)',
+    pointerEvents: 'none'
+  },
   searchInput: {
-    padding: '0.5rem 2rem 0.5rem 0.75rem',
-    border: '1px solid #e1e4e8',
-    borderRadius: '4px',
+    padding: '0.625rem 2.5rem 0.625rem 2.75rem',
+    border: '1px solid var(--border)',
+    borderRadius: 'var(--radius-md)',
     fontSize: '0.875rem',
-    width: '250px'
+    width: '280px',
+    transition: 'all 0.2s ease'
   },
   clearSearchBtn: {
     position: 'absolute',
     right: '8px',
     background: 'transparent',
     border: 'none',
-    fontSize: '1.25rem',
-    color: '#6c757d',
+    color: 'var(--text-muted)',
     cursor: 'pointer',
-    padding: '0',
-    lineHeight: 1
+    padding: '0.25rem',
+    display: 'flex',
+    alignItems: 'center',
+    borderRadius: 'var(--radius-sm)',
+    transition: 'all 0.2s ease'
   },
   searchInfo: {
     fontSize: '0.875rem',
-    color: '#6c757d'
+    color: 'var(--text-secondary)'
   },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse'
-  },
-  th: {
-    textAlign: 'left',
-    padding: '0.75rem',
-    borderBottom: '2px solid #e1e4e8',
-    fontSize: '0.875rem',
-    fontWeight: '600',
-    color: '#495057'
-  },
-  row: {
-    cursor: 'pointer',
-    borderBottom: '1px solid #f1f3f5',
-    transition: 'background 0.2s'
-  },
-  td: {
-    padding: '1rem 0.75rem',
-    fontSize: '0.875rem'
-  },
+  table: tableStyles.table,
+  th: tableStyles.th,
+  row: tableStyles.row,
+  td: tableStyles.td,
   roleBadge: {
-    padding: '0.25rem 0.75rem',
-    background: '#e7f3ff',
-    color: '#4a90e2',
-    borderRadius: '12px',
-    fontSize: '0.75rem',
-    fontWeight: '500',
-    textTransform: 'capitalize'
+    ...badgeStyles.default,
+    ...badgeStyles.primary
   },
   code: {
-    padding: '0.25rem 0.5rem',
-    background: '#f1f3f5',
-    borderRadius: '4px',
+    padding: '0.375rem 0.625rem',
+    background: 'var(--bg-tertiary)',
+    borderRadius: 'var(--radius-sm)',
     fontSize: '0.8125rem',
-    fontFamily: 'monospace'
+    fontFamily: 'monospace',
+    color: 'var(--text-primary)'
   },
   actions: {
     display: 'flex',
     gap: '0.5rem'
-  },
-  actionBtn: {
-    padding: '0.25rem 0.5rem',
-    background: 'transparent',
-    border: '1px solid #e1e4e8',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '0.875rem'
   },
   emptyState: {
     textAlign: 'center',
@@ -908,56 +884,22 @@ const styles = {
     color: '#6c757d'
   },
   emptyText: {
-    color: '#6c757d',
+    color: 'var(--text-muted)',
     fontStyle: 'italic'
   },
   errorContainer: {
     textAlign: 'center',
-    padding: '2rem'
+    padding: '3rem 2rem'
   },
   errorText: {
-    color: '#dc3545',
-    marginBottom: '1rem'
+    color: 'var(--error)',
+    marginBottom: '1rem',
+    fontSize: '1rem'
   },
-  retryButton: {
-    padding: '0.5rem 1rem',
-    background: '#4a90e2',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer'
-  },
-  formGroup: {
-    marginBottom: '1rem'
-  },
-  label: {
-    display: 'block',
-    marginBottom: '0.5rem',
-    fontWeight: '500',
-    color: '#2c3e50'
-  },
-  input: {
-    width: '100%',
-    padding: '0.75rem',
-    border: '1px solid #e1e4e8',
-    borderRadius: '4px',
-    fontSize: '1rem',
-    boxSizing: 'border-box'
-  },
-  cancelButton: {
-    padding: '0.5rem 1rem',
-    background: '#f8f9fa',
-    color: '#6c757d',
-    border: '1px solid #e1e4e8',
-    borderRadius: '4px',
-    cursor: 'pointer'
-  },
-  submitButton: {
-    padding: '0.5rem 1rem',
-    background: '#4a90e2',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer'
-  }
+  retryButton: buttonStyles.primary,
+  formGroup: formStyles.formGroup,
+  label: formStyles.label,
+  input: formStyles.input,
+  cancelButton: buttonStyles.secondary,
+  submitButton: buttonStyles.primary
 }

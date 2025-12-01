@@ -9,6 +9,8 @@ import Modal from '../components/Modal'
 import EmptyState from '../components/EmptyState'
 import { useClasses } from '../hooks/useClasses'
 import { analyticsAPI } from '../api/config'
+import { Plus, Users, TrendingUp, Award } from 'lucide-react'
+import { buttonStyles, formStyles } from '../styles/commonStyles'
 
 export default function TeacherDashboard() {
   const navigate = useNavigate()
@@ -164,9 +166,10 @@ export default function TeacherDashboard() {
         <div style={styles.classHeader}>
           <button 
             onClick={() => setShowAddModal(true)} 
-            style={styles.addButton}
+            style={buttonStyles.primary}
           >
-            + Add Classroom
+            <Plus size={18} />
+            <span>Add Classroom</span>
           </button>
         </div>
         
@@ -258,19 +261,20 @@ const styles = {
   statValue: {
     fontSize: '2.5rem',
     fontWeight: '600',
-    color: '#4a90e2',
+    color: 'var(--primary)',
     marginBottom: '0.5rem'
   },
   statLabel: {
     fontSize: '0.875rem',
-    color: '#6c757d'
+    color: 'var(--text-muted)',
+    lineHeight: 1.5
   },
   skillBadge: {
     display: 'inline-block',
-    padding: '0.5rem 1rem',
-    background: '#e7f3ff',
-    color: '#4a90e2',
-    borderRadius: '20px',
+    padding: '0.625rem 1.25rem',
+    background: 'var(--primary-light)',
+    color: 'var(--primary-dark)',
+    borderRadius: 'var(--radius-xl)',
     fontSize: '1rem',
     fontWeight: '500',
     textTransform: 'capitalize',
@@ -279,94 +283,49 @@ const styles = {
   classHeader: {
     display: 'flex',
     justifyContent: 'flex-end',
-    marginBottom: '1rem'
-  },
-  addButton: {
-    padding: '0.5rem 1rem',
-    background: '#4a90e2',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '0.875rem',
-    fontWeight: '500'
+    marginBottom: '1.5rem'
   },
   classList: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-    gap: '1rem'
+    gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+    gap: '1.25rem'
   },
   classCard: {
     padding: '1.5rem',
-    background: '#f8f9fa',
-    border: '1px solid #e1e4e8',
-    borderRadius: '8px',
+    background: 'var(--bg-tertiary)',
+    border: '1px solid var(--border-light)',
+    borderRadius: 'var(--radius-lg)',
     textAlign: 'left',
     cursor: 'pointer',
-    transition: 'border-color 0.2s'
+    transition: 'all 0.2s ease',
+    boxShadow: 'var(--shadow-sm)'
   },
   className: {
     fontSize: '1.125rem',
     fontWeight: '600',
-    color: '#2c3e50',
-    marginBottom: '0.5rem'
+    color: 'var(--text-primary)',
+    marginBottom: '0.5rem',
+    letterSpacing: '-0.01em'
   },
   classInfo: {
     fontSize: '0.875rem',
-    color: '#6c757d'
-  },
-  emptyState: {
-    textAlign: 'center',
-    padding: '2rem',
-    color: '#6c757d'
+    color: 'var(--text-secondary)'
   },
   errorContainer: {
     textAlign: 'center',
-    padding: '2rem'
+    padding: '3rem 2rem'
   },
   errorText: {
-    color: '#dc3545',
-    marginBottom: '1rem'
+    color: 'var(--error)',
+    marginBottom: '1rem',
+    fontSize: '1rem'
   },
   retryButton: {
-    padding: '0.5rem 1rem',
-    background: '#4a90e2',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer'
+    ...buttonStyles.primary
   },
-  formGroup: {
-    marginBottom: '1rem'
-  },
-  label: {
-    display: 'block',
-    marginBottom: '0.5rem',
-    fontWeight: '500',
-    color: '#2c3e50'
-  },
-  input: {
-    width: '100%',
-    padding: '0.75rem',
-    border: '1px solid #e1e4e8',
-    borderRadius: '4px',
-    fontSize: '1rem',
-    boxSizing: 'border-box'
-  },
-  cancelButton: {
-    padding: '0.5rem 1rem',
-    background: '#f8f9fa',
-    color: '#6c757d',
-    border: '1px solid #e1e4e8',
-    borderRadius: '4px',
-    cursor: 'pointer'
-  },
-  submitButton: {
-    padding: '0.5rem 1rem',
-    background: '#4a90e2',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer'
-  }
+  formGroup: formStyles.formGroup,
+  label: formStyles.label,
+  input: formStyles.input,
+  cancelButton: buttonStyles.secondary,
+  submitButton: buttonStyles.primary
 }

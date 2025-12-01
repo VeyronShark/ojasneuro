@@ -11,6 +11,8 @@ import Card from '../components/Card'
 import LoadingSpinner from '../components/LoadingSpinner'
 import Modal from '../components/Modal'
 import { studentsAPI, classesAPI, insightsAPI, analyticsAPI } from '../api/config'
+import { Edit2, Download, TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { buttonStyles, formStyles } from '../styles/commonStyles'
 
 export default function ChildProfile() {
   const { childId } = useParams()
@@ -164,9 +166,9 @@ export default function ChildProfile() {
   }
 
   const getTrendIcon = (trend) => {
-    if (trend === 'up') return '↗️'
-    if (trend === 'down') return '↘️'
-    return '→'
+    if (trend === 'up') return <TrendingUp size={18} color="var(--success)" />
+    if (trend === 'down') return <TrendingDown size={18} color="var(--error)" />
+    return <Minus size={18} color="var(--text-muted)" />
   }
 
   const getSkillLevel = (level) => {
@@ -286,8 +288,9 @@ export default function ChildProfile() {
             {className} • Age {displayAge}
           </div>
         </div>
-        <button onClick={openEditModal} style={styles.editButton}>
-          ✏️ Edit Student
+        <button onClick={openEditModal} style={buttonStyles.primary}>
+          <Edit2 size={18} />
+          <span>Edit Student</span>
         </button>
       </div>
 
@@ -374,8 +377,9 @@ export default function ChildProfile() {
         </Card>
       </div>
 
-      <button style={styles.downloadBtn}>
-        📄 Download Summary for PTM (PDF)
+      <button style={buttonStyles.secondary}>
+        <Download size={18} />
+        <span>Download Summary for PTM (PDF)</span>
       </button>
       
       {/* Edit Student Modal */}
@@ -440,45 +444,40 @@ const styles = {
     alignItems: 'flex-start'
   },
   name: {
-    fontSize: '2rem',
+    fontSize: '2.25rem',
     fontWeight: '600',
-    color: '#2c3e50',
-    marginBottom: '0.5rem'
+    color: 'var(--text-primary)',
+    marginBottom: '0.5rem',
+    letterSpacing: '-0.02em'
   },
   meta: {
     fontSize: '1rem',
-    color: '#6c757d'
-  },
-  editButton: {
-    padding: '0.5rem 1rem',
-    background: '#4a90e2',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontSize: '0.875rem',
-    fontWeight: '500'
+    color: 'var(--text-secondary)'
   },
   grid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(3, 1fr)',
     gap: '1.5rem',
-    marginBottom: '1.5rem'
+    marginBottom: '2rem'
   },
   statValue: {
     fontSize: '2.5rem',
     fontWeight: '600',
-    color: '#4a90e2',
+    color: 'var(--primary)',
     marginBottom: '0.5rem'
   },
   statLabel: {
     fontSize: '0.875rem',
-    color: '#6c757d'
+    color: 'var(--text-muted)',
+    lineHeight: 1.5
   },
   trend: {
     marginTop: '0.75rem',
     fontSize: '0.875rem',
-    color: '#495057'
+    color: 'var(--text-secondary)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem'
   },
   skillGrid: {
     display: 'flex',
@@ -508,17 +507,18 @@ const styles = {
   },
   skillLevel: {
     fontSize: '0.75rem',
-    color: '#6c757d',
+    color: 'var(--text-muted)',
     textTransform: 'capitalize',
-    textAlign: 'right'
+    textAlign: 'right',
+    fontWeight: '500'
   },
   insight: {
     fontSize: '0.9375rem',
-    lineHeight: '1.6',
-    color: '#495057'
+    lineHeight: '1.7',
+    color: 'var(--text-secondary)'
   },
   emptyText: {
-    color: '#6c757d',
+    color: 'var(--text-muted)',
     fontStyle: 'italic'
   },
   weeklyChart: {
@@ -540,84 +540,36 @@ const styles = {
   },
   bar: {
     width: '40px',
-    borderRadius: '4px 4px 0 0',
+    borderRadius: 'var(--radius-sm) var(--radius-sm) 0 0',
     minHeight: '4px'
   },
   dayLabel: {
     fontSize: '0.75rem',
-    color: '#6c757d',
+    color: 'var(--text-muted)',
     fontWeight: '500'
   },
   sessionCount: {
     fontSize: '0.875rem',
-    color: '#495057'
-  },
-  downloadBtn: {
-    padding: '0.75rem 1.5rem',
-    background: '#4a90e2',
-    color: 'white',
-    borderRadius: '4px',
-    fontSize: '0.9375rem',
-    fontWeight: '500',
-    border: 'none',
-    cursor: 'pointer'
+    color: 'var(--text-secondary)',
+    fontWeight: '500'
   },
   errorContainer: {
     textAlign: 'center',
-    padding: '2rem'
+    padding: '3rem 2rem'
   },
   errorText: {
-    color: '#dc3545',
-    marginBottom: '1rem'
+    color: 'var(--error)',
+    marginBottom: '1rem',
+    fontSize: '1rem'
   },
   retryButton: {
-    padding: '0.5rem 1rem',
-    background: '#4a90e2',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    marginRight: '0.5rem'
+    ...buttonStyles.primary,
+    marginRight: '0.75rem'
   },
-  backButton: {
-    padding: '0.5rem 1rem',
-    background: '#6c757d',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer'
-  },
-  formGroup: {
-    marginBottom: '1rem'
-  },
-  label: {
-    display: 'block',
-    marginBottom: '0.5rem',
-    fontWeight: '500',
-    color: '#2c3e50'
-  },
-  input: {
-    width: '100%',
-    padding: '0.75rem',
-    border: '1px solid #e1e4e8',
-    borderRadius: '4px',
-    fontSize: '1rem',
-    boxSizing: 'border-box'
-  },
-  cancelButton: {
-    padding: '0.5rem 1rem',
-    background: '#f8f9fa',
-    color: '#6c757d',
-    border: '1px solid #e1e4e8',
-    borderRadius: '4px',
-    cursor: 'pointer'
-  },
-  submitButton: {
-    padding: '0.5rem 1rem',
-    background: '#4a90e2',
-    color: 'white',
-    border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer'
-  }
+  backButton: buttonStyles.secondary,
+  formGroup: formStyles.formGroup,
+  label: formStyles.label,
+  input: formStyles.input,
+  cancelButton: buttonStyles.secondary,
+  submitButton: buttonStyles.primary
 }
