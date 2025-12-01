@@ -32,9 +32,14 @@ class ProductionConfig(Config):
     DEBUG = False
     
     # Handle Render's postgres:// vs postgresql:// URL format
-    database_url = os.environ.get('DATABASE_URL', '')
+    # Get raw URL from environment
+    database_url = os.getenv('DATABASE_URL', '')
+    # Convert legacy postgres:// to postgresql:// for SQLAlchemy compatibility
     if database_url.startswith('postgres://'):
         database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    # Force use of pg8000 driver
+    if database_url.startswith('postgresql://'):
+        database_url = database_url.replace('postgresql://', 'postgresql+pg8000://', 1)
     SQLALCHEMY_DATABASE_URI = database_url
     
     # Override with stronger settings in production

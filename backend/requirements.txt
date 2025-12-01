@@ -7,7 +7,7 @@ Flask-Cors==4.0.0
 # Database
 SQLAlchemy>=2.0.36
 Flask-SQLAlchemy>=3.1.1
-psycopg2-binary==2.9.9
+pg8000>=1.30
 
 # Serialization and validation
 marshmallow==3.20.1
@@ -30,4 +30,4 @@ factory-boy==3.3.0
 
 # Development utilities
 python-dotenv==1.0.0
-gunicorn==21.2.0
+
